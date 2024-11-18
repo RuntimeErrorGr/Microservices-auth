@@ -1,0 +1,3 @@
+/webserver/app/logs/*
+/webserver/app/cache/*
+/webserver/app/__pycache__/*
