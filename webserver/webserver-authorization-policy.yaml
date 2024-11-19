@@ -1,0 +1,12 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: webserver-auth
+spec:
+  selector:
+    matchLabels:
+      app: webserver
+  rules:
+    - from:
+        - source:
+            requestPrincipals: ["*"]
