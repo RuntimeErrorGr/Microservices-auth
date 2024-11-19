@@ -1,5 +1,5 @@
 from app import create_app
-from flask import render_template, redirect, request, session, url_for
+from flask import render_template, redirect, session, url_for
 import logging
 
 app = create_app()

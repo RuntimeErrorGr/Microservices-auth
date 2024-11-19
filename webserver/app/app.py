@@ -22,7 +22,6 @@ def create_app():
 
 def configure_app(app: Flask):
     app.config.from_object(Config)
-    app.secret_key = "supersecretkey"
 
 
 def configure_logging():

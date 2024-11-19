@@ -2,6 +2,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: webserver
+labels:
+  app: webserver
 spec:
   replicas: 1
   selector:
@@ -11,12 +13,30 @@ spec:
     metadata:
       labels:
         app: webserver
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
         - name: webserver
-          image: andrei8080/webserver
+          image: andrei8080/webserver:latest
+          env:
           ports:
             - containerPort: 5000
+          env:
+            - name: FLASK_APP
+              valueFrom:
+                configMapKeyRef:
+                  name: webserver-config
+                  key: FLASK_APP
+            - name: PROJECT_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: webserver-config
+                  key: PROJECT_NAME
+            - name: KEYCLOAK_IP
+              valueFrom:
+                configMapKeyRef:
+                  name: webserver-config
+                  key: KEYCLOAK_IP
 ---
 apiVersion: v1
 kind: Service
