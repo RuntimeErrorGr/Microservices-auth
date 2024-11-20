@@ -7,11 +7,11 @@ metadata:
 spec:
   ports:
     - name: https
-      port: 443
+      port: 88
       targetPort: 8080
   selector:
     app: keycloak
-  type: LoadBalancer
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -45,7 +45,7 @@ spec:
             - name: KC_PROXY
               value: "edge"
             - name: KC_HOSTNAME
-              value: "posd-app.com"
+              value: "posd-app-keycloak.com"
             - name: KC_HOSTNAME_STRICT_HTTPS
               value: "true"
             - name: KC_LOG_LEVEL
@@ -77,5 +77,5 @@ spec:
       volumes:
         - name: tls
           secret:
-            secretName: my-tls
+            secretName: my-tls-2
             optional: false

@@ -1,33 +1,64 @@
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
-  name: webserver-gateway
+  name: posd-app-gateway
 spec:
   selector:
     istio: ingressgateway
   servers:
     - port:
-        number: 80
-        name: http
-        protocol: HTTP
+        number: 443
+        name: https-webserver
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: my-tls
       hosts:
-        - "*"
+        - "posd-app.com"
+    - port:
+        number: 443
+        name: https-keycloak
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: my-tls-2
+      hosts:
+        - "posd-app-keycloak.com"
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
-  name: webserver-vs
+  name: posd-app-vs
 spec:
   hosts:
-    - "*"
+    - "posd-app.com"
   gateways:
-    - webserver-gateway
+    - posd-app-gateway
   http:
     - match:
         - uri:
-            prefix: /
+            prefix: "/"
       route:
         - destination:
             host: webserver-service
             port:
-              number: 5000
+              number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: keycloak-vs
+spec:
+  hosts:
+    - "posd-app-keycloak.com"
+  gateways:
+    - posd-app-gateway
+  http:
+    - match:
+        - uri:
+            prefix: "/"
+      route:
+        - destination:
+            host: keycloak-service
+            port:
+              number: 88
