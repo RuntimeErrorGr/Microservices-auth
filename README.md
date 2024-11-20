@@ -28,6 +28,6 @@
 
 ## How to deploy the whole thing:
 
-    1. Just make sure you have miniube running.
-    2. Go through the prerequisites setup.
-    3. Just *kubeclt apply -f* all .yaml files you find (would be nice to have a script for this).
+1. Just make sure you have miniube running.
+2. Go through the prerequisites setup.
+3. Just _kubeclt apply -f_ all .yaml files you find (would be nice to have a script for this).
