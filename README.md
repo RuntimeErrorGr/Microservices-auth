@@ -10,3 +10,6 @@
 	3. Start the cluster: minikube start --driver=kvm2
 	4. Check if you have access to it: kubectl get po -A
 	5. Open cluster dashboard: minikube dashboard
+
+## Persistent postgres for keycloak:
+https://www.youtube.com/watch?v=SJrvqQF6qA0&t=1343s
