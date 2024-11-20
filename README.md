@@ -12,13 +12,17 @@
    3. Start the cluster: minikube start --driver=kvm2
    4. Check if you have access to it: kubectl get po -A
    5. Open cluster dashboard: minikube dashboard
+   6. Enable istio addons: minikube addons enable istio-provisioner minikube addons enable istio
+   7. Enable minikube tunnel: sudo minikube tunnel
 
    ### Persistent postgres for keycloak:
 
    This guy explains how to setup keycloak with postgres local + how to add tls to it.
    https://www.youtube.com/watch?v=SJrvqQF6qA0&t=1343s
 
-## Important notes (21.11.2024):
+## Important notes:
+
+    ### (21.11.2024)
 
 1. Keycloak has persistent storage, so you can restart the pod without losing data. But this storage is local, on my laptop.
    **If you want to use it, you need to follow the tutorial above.**
@@ -28,6 +32,5 @@
 
 ## How to deploy the whole thing:
 
-1. Just make sure you have miniube running.
-2. Go through the prerequisites setup.
-3. Just _kubeclt apply -f_ all .yaml files you find (would be nice to have a script for this).
+1. Go through the prerequisites setup.
+2. Just _kubeclt apply -f_ all .yaml files you find (would be nice to have a script for this).
