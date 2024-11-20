@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: keycloak
+  name: keycloak-service
   labels:
     app: keycloak
 spec:
   ports:
-    - name: http
-      port: 8080
+    - name: https
+      port: 443
       targetPort: 8080
   selector:
     app: keycloak
@@ -31,8 +31,12 @@ spec:
     spec:
       containers:
         - name: keycloak
-          image: quay.io/keycloak/keycloak:26.0.5
-          args: ["start-dev"]
+          image: quay.io/keycloak/keycloak:20.0.2
+          volumeMounts:
+            - name: tls
+              mountPath: "/etc/ssl"
+              readOnly: true
+          args: ["start"]
           env:
             - name: KEYCLOAK_ADMIN
               value: "admin"
@@ -40,10 +44,38 @@ spec:
               value: "admin"
             - name: KC_PROXY
               value: "edge"
+            - name: KC_HOSTNAME
+              value: "posd-app.com"
+            - name: KC_HOSTNAME_STRICT_HTTPS
+              value: "true"
+            - name: KC_LOG_LEVEL
+              value: "INFO"
+            - name: KC_DB
+              value: "postgres"
+            - name: KC_DB_URL
+              value: "jdbc:postgresql://192.168.1.9:5432/keycloakdb"
+            - name: KC_DB_USERNAME
+              value: "keycloakuser"
+            - name: KC_DB_PASSWORD
+              value: "123"
+            - name: KC_TRANSACTION_XA_ENABLED
+              value: "true"
+            - name: KC_HEALTH_ENABLED
+              value: "true"
+            - name: KC_METRICS_ENABLED
+              value: "true"
           ports:
             - name: http
               containerPort: 8080
           readinessProbe:
             httpGet:
+              scheme: HTTP
               path: /realms/master
               port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 1
+      volumes:
+        - name: tls
+          secret:
+            secretName: my-tls
+            optional: false
