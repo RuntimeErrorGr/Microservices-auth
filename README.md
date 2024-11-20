@@ -24,7 +24,7 @@
    **If you want to use it, you need to follow the tutorial above.**
 2. There are some secrets that you need to create in the cluster in order to access the app via istio gateway.
    **You can find them in the mytls and mytls-2 folders.**
-3. In order to access the app via istio gateway you can type in your browser: http://posd-app.com (for the webapp) and http://posd-keycloak.com (for keycloak dashboard).
+3. In order to access the app via istio gateway you can type in your browser: http://posd-app.com (for the webapp) and http://posd-app-keycloak.com (for keycloak dashboard).
 
 ## How to deploy the whole thing:
 
