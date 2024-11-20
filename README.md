@@ -22,7 +22,7 @@
 
 ## Important notes:
 
-    ### (21.11.2024)
+### (21.11.2024)
 
 1. Keycloak has persistent storage, so you can restart the pod without losing data. But this storage is local, on my laptop.
    **If you want to use it, you need to follow the tutorial above.**
