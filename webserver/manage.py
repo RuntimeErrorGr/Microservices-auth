@@ -11,13 +11,10 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/dashboard")
+@app.route("/teapot", methods=["POST"])
 def dashboard():
     logging.info("Dashboard page requested")
-    if "access_token" in session:
-        return render_template("dashboard.html")
-    else:
-        return redirect(url_for("index"))
+    return "I'm a teapot from the POSD project app", 418
 
 
 @app.route("/logout", methods=["POST"])
