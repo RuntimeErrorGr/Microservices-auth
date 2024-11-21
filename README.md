@@ -31,6 +31,7 @@
    ```
 2. There are some secrets that you need to create in the cluster in order to access the app via istio gateway.
    **You can find them in the mytls and mytls-2 folders.**
+   Create them in deafult and istio-system namespaces.
 3. In order to access the app via istio gateway you can type in your browser: http://posd-app.com (for the webapp) and http://posd-app-keycloak.com (for keycloak dashboard).
 4. Generate a JWT token with keycloak:
 
@@ -46,7 +47,9 @@
 
 5. Test if istio authorization works:
 
-   curl -k -H -X "POST" "Authorization: Bearer <insert token here>" http://posd-app.com/teapot
+   ```
+   curl -k -H -X "POST" "Authorization: Bearer \*insert token here\*\*" http://posd-app.com/teapot
+   ```
 
    The response should be:
 
