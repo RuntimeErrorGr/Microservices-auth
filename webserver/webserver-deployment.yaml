@@ -31,11 +31,11 @@ spec:
                 configMapKeyRef:
                   name: webserver-config
                   key: PROJECT_NAME
-            - name: KEYCLOAK_IP
+            - name: KEYCLOAK_URL
               valueFrom:
                 configMapKeyRef:
                   name: webserver-config
-                  key: KEYCLOAK_IP
+                  key: KEYCLOAK_URL
 ---
 apiVersion: v1
 kind: Service

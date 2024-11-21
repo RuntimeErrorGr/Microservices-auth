@@ -10,12 +10,3 @@ spec:
     - from:
         - source:
             requestPrincipals: ["*"]
-      to:
-        - operation:
-            paths: ["/app"] # Allow unauthenticated access to `/app`
-    - from:
-        - source:
-            requestPrincipals: ["*"]
-      to:
-        - operation:
-            notPaths: ["/app"] # Require authentication for all other paths

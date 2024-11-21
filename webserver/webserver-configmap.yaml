@@ -5,4 +5,4 @@ metadata:
 data:
   FLASK_APP: "app/__init__.py"
   PROJECT_NAME: "webserver"
-  KEYCLOAK_IP: "http://10.103.125.136:8080/realms/Istio/protocol/openid-connect/token"
+  KEYCLOAK_URL: "https://posd-app-keycloak.com/realms/Istio/protocol/openid-connect/token"

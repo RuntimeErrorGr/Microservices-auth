@@ -7,5 +7,5 @@ spec:
     matchLabels:
       app: webserver
   jwtRules:
-    - issuer: "http://keycloak:8080/realms/Istio"
-      jwksUri: "http://keycloak:8080/realms/Istio/protocol/openid-connect/certs"
+    - issuer: "http://10.105.139.64:88/realms/Istio"
+      jwksUri: "http://10.105.139.64:88/realms/Istio/protocol/openid-connect/certs"
