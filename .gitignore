@@ -1,3 +1,8 @@
 /webserver/app/logs/*
 /webserver/app/cache/*
 /webserver/app/__pycache__/*
+books_information/.idea/compiler.xml
+books_information/.idea/encodings.xml
+books_information/.idea/jarRepositories.xml
+books_information/.idea/misc.xml
+books_information/.idea/vcs.xml
