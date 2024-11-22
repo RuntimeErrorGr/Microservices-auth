@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: books-information
+  labels:
+    app: books-information
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: books-information
+  template:
+    metadata:
+      labels:
+        app: books-information
+    spec:
+      containers:
+        - name: books-information
+          image: andrei8080/books_information:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "books-information-db"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_DATABASE
+              value: "book_reviews"
+            - name: DB_USER
+              value: "postgres"
+            - name: DB_PASSWORD
+              value: "000"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: books-information-service
+spec:
+  selector:
+    app: books-information
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP

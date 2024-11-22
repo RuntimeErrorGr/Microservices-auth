@@ -57,6 +57,54 @@
    I'm a teapot from the POSD project app
    ```
 
+### (22.11.2024)
+
+We have 4 microservices until now up and running in kubernetes:
+
+1. webserver
+2. keycloak
+3. books_information
+4. books_information_db
+
+How to test books_information:
+
+1. Exec into webserver (the books_information client is accesible only inside cluster #TODO: restrict it only to webserver).
+
+```
+kubectl exec -it *webserver_pod_name* -- /bin/bash
+```
+
+2. Make a request
+
+```
+curl -s http://books-information-service:8080/books | python3 -m json.tool
+```
+
+Response should be:
+
+```
+[
+    {
+        "bookId": 1,
+        "title": "The Great Gatsby",
+        "author": "F. Scott Fitzgerald",
+        "genre": "Fiction",
+        "publicationDate": "1925-04-10",
+        "isbn": "9780743273565",
+        "description": "A novel set in the Jazz Age."
+    },
+    {
+        "bookId": 2,
+        "title": "To Kill a Mockingbird",
+        "author": "Harper Lee",
+        "genre": "Fiction",
+        "publicationDate": "1960-07-11",
+        "isbn": "9780060935467",
+        "description": "A tale of racial injustice and childhood innocence."
+    }
+]
+```
+
 ## How to deploy the whole thing:
 
 1. Go through the prerequisites setup.
