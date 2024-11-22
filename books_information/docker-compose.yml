@@ -1,0 +1,42 @@
+version: '3.8'
+services:
+  db:
+    container_name: books-information-db
+    build:
+      context: ../books_information_db
+      dockerfile: ../books_information_db/Dockerfile
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "000"
+      POSTGRES_DB: book_reviews
+
+  app:
+    container_name: books-information-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    environment:
+      DB_HOST: books-information-db
+      DB_PORT: 5432
+      DB_DATABASE: book_reviews
+      DB_USER: postgres
+      DB_PASSWORD: 000
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db-data:
