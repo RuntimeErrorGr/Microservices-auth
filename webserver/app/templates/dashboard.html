@@ -1,11 +1,63 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Dashboard</title>
+    {% block metas %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% endblock %}
+
+    <title>Dashboard - Istio App</title>
+
+    {% block styles %}
+    <style>
+        table {
+            color: #333;
+            background: white;
+            border: 1px solid grey;
+            font-size: 12pt;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        table thead th,
+        table tfoot th {
+            color: #fff;
+            background: #466BB0;
+        }
+
+        table caption {
+            padding: .5em;
+        }
+
+        table th,
+        table td {
+            padding: .5em;
+            border: 1px solid lightgrey;
+        }
+    </style>
+    {% endblock %}
 </head>
 <body>
-    <h1>Authenticated Dashboard</h1>
-    <p>You are logged in!</p>
-    <a href="{{ url_for('logout') }}">Logout</a>
+    {% block scripts %}
+    <link href="{{ url_for('static', filename='tailwind/tailwind.css') }}" rel="stylesheet">
+
+    {% endblock %}
+
+    {% block content %}
+    <div class="mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col space-y-5 py-32 mx-auto max-w-7xl">
+            <h3 class="text-2xl font-bold">Welcome to the Dashboard</h3>
+            <p class="text-lg">
+                You are authenticated as: <strong>{{ username }}</strong> with role: <strong>{{ role }}</strong>.
+            </p>
+            <form id="logout-form" action="{{ url_for('logout') }}" method="POST" style="display: inline;">
+                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Logout
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endblock %}
 </body>
 </html>

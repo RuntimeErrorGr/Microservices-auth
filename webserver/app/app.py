@@ -10,7 +10,10 @@ __all__ = ["create_app"]
 def create_app():
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "templates"))
     app = Flask(
-        Config.PROJECT_NAME, instance_relative_config=True, template_folder=template_dir
+        Config.PROJECT_NAME,
+        instance_relative_config=True,
+        template_folder=template_dir,
+        static_folder="static",
     )
     configure_logging()
     configure_app(app)

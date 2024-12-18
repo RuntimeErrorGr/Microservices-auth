@@ -6,7 +6,15 @@ spec:
   selector:
     matchLabels:
       app: webserver
+  action: ALLOW
   rules:
-    - from:
-        - source:
-            requestPrincipals: ["*"]
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/", "/static/tailwind/tailwind.css"]
+        - operation:
+            methods: ["POST"]
+            paths: ["/login", "/logout"]
+        - operation:
+            methods: ["GET"]
+            paths: ["/dashboard"]
