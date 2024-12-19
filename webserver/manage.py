@@ -17,9 +17,8 @@ def index():
     if session.get("Authorization"):
         logging.info("User already logged in")
         return redirect(url_for("dashboard"))
-
     logging.info("User not logged in")
-    return render_template("index.html", error=None)
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["POST"])
@@ -27,27 +26,32 @@ def login():
     username = request.form.get("username")
     password = request.form.get("password")
 
+    # Data to send to Keycloak
     data = {
         "client_id": CLIENT_ID,
         "username": username,
         "password": password,
         "grant_type": "password",
     }
-    response = requests.post(KEYCLOAK_URL, data=data, verify=False)
-    logging.info("Keycloak response: %s", response.text)
+    try:
+        response = requests.post(KEYCLOAK_URL, data=data, verify=False, timeout=1)
+        logging.info("Keycloak response: %s", response.text)
 
-    if response.status_code == 200:
-        token_data = response.json()
-        session["Authorization"] = token_data["access_token"]
-        session["username"] = username
-        session["role"] = "tbd"
-        return jsonify({"access_token": token_data["access_token"]})
-    else:
+        if response.status_code == 200:
+            token_data = response.json()
+            session["Authorization"] = token_data["access_token"]
+            session["username"] = username
+            session["role"] = "tbd"
+            return jsonify({"success": True, "redirect": url_for("dashboard")})
+        else:
+            logging.error("Invalid credentials")
+            return jsonify({"success": False, "message": "Invalid credentials"}), 401
+    except requests.exceptions.RequestException:
         logging.error("Invalid credentials")
-        return jsonify({"error": "Invalid credentials"}), 400
+        return jsonify({"success": False, "message": "Invalid credentials"}), 401
 
 
-@app.route("/dashboard")
+@app.route("/dashboard", methods=["GET"])
 def dashboard():
     access_token = session.get("Authorization")
     if not access_token:
@@ -55,7 +59,6 @@ def dashboard():
         return redirect(url_for("index"))
 
     logging.info("User logged in")
-
     return render_template(
         "dashboard.html", username=session.get("username"), role=session.get("role")
     )
@@ -65,4 +68,4 @@ def dashboard():
 def logout():
     session.clear()
     logging.info("User logged out")
-    return redirect(url_for("index"))
+    return jsonify({"success": True, "redirect": url_for("index")})

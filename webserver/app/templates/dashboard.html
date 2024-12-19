@@ -51,13 +51,50 @@
             <p class="text-lg">
                 You are authenticated as: <strong>{{ username }}</strong> with role: <strong>{{ role }}</strong>.
             </p>
-            <form id="logout-form" action="{{ url_for('logout') }}" method="POST" style="display: inline;">
-                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                    Logout
-                </button>
-            </form>
+    
+            <button id="logout-button" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                Logout
+            </button>
+    
+            <div id="logout-message" class="mt-4 text-lg font-bold"></div>
         </div>
     </div>
+    
+    <script>
+        document.getElementById("logout-button").addEventListener("click", async function () {
+            const logoutMessage = document.getElementById("logout-message");
+            logoutMessage.textContent = "";
+    
+            try {
+                const response = await fetch("{{ url_for('logout') }}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        logoutMessage.textContent = "You have been logged out.";
+                        logoutMessage.style.color = "green";
+                        window.location.href = data.redirect;
+                    } else {
+                        logoutMessage.textContent = "Failed to logout. Please try again.";
+                        logoutMessage.style.color = "red";
+                    }
+                } else {
+                    logoutMessage.textContent = "An error occurred. Please try again.";
+                    logoutMessage.style.color = "red";
+                }
+            } catch (err) {
+                logoutMessage.textContent = "A network error occurred. Please try again.";
+                logoutMessage.style.color = "red";
+                console.error(err);
+            }
+        });
+    </script>
     {% endblock %}
+    
 </body>
 </html>

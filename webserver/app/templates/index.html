@@ -48,20 +48,31 @@
 
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
-            const response = await fetch ('/login', {
-                method: 'POST',
-                body: new URLSearchParams({
-                    username: username,
-                    password: password
-                }),
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                }
-            });
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = '';
 
-            if (response.ok) {
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    body: new URLSearchParams({
+                        username: username,
+                        password: password
+                    }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
                 const data = await response.json();
-                window.location.href = '/dashboard';
+
+                if (response.ok) {
+                    window.location.href = data.redirect;
+                } else {
+                    errorElement.textContent = data.message || 'An error occurred. Please try again.';
+                }
+            } catch (err) {
+                errorElement.textContent = 'Failed to connect to the server. Please try again later.';
+                console.error(err);
             }
         }
     </script>
@@ -72,9 +83,9 @@
         <div class="flex flex-col space-y-5 py-32 mx-auto max-w-7xl">
             <h3 class="text-2xl">Hello! This is our Istio books review app.</h3>
             
-            {% if error %}
-                <p style="color: red;">{{ error }}</p>
-            {% endif %}
+            <div class="error-container">
+                <p id="error" style="color: red;"></p>
+            </div>            
             
             <form method="post" onsubmit="handleLogin(event)" class="space-y-4">
                 <div>
