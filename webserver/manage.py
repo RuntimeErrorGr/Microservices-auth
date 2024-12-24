@@ -9,6 +9,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 
 # Keycloak configuration
 KEYCLOAK_URL = app.config["KEYCLOAK_URL"]
+KEYCLOAK_LOGOUT_URL = app.config["KEYCLOAK_URL"].replace("token", "logout")
 CLIENT_ID = "Istio"
 
 
@@ -40,6 +41,7 @@ def login():
         if response.status_code == 200:
             token_data = response.json()
             session["Authorization"] = token_data["access_token"]
+            session["refresh_token"] = token_data["refresh_token"]
             session["username"] = username
             session["role"] = "tbd"
             return jsonify({"success": True, "redirect": url_for("dashboard")})
@@ -66,6 +68,32 @@ def dashboard():
 
 @app.route("/logout", methods=["POST"])
 def logout():
-    session.clear()
-    logging.info("User logged out")
-    return jsonify({"success": True, "redirect": url_for("index")})
+    access_token = session.get("Authorization")
+    if not access_token:
+        return jsonify({"success": False, "message": "No active session"}), 400
+
+    data = {
+        "client_id": CLIENT_ID,
+        "refresh_token": session.get("refresh_token"),
+    }
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/x-www-form-urlencoded",
+    }
+
+    try:
+        response = requests.post(
+            KEYCLOAK_LOGOUT_URL, data=data, headers=headers, verify=False
+        )
+        if response.status_code == 204:
+            session.clear()
+            return jsonify({"success": True, "redirect": url_for("index")})
+        else:
+            logging.error(f"Logout failed: {response.text}")
+            return (
+                jsonify({"success": False, "message": "Logout failed"}),
+                response.status_code,
+            )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error during logout: {e}")
+        return jsonify({"success": False, "message": "Error during logout"}), 500
