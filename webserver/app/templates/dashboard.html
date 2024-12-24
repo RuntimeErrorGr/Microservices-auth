@@ -1,99 +1,14 @@
-{% block metas %}
-<meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-{% endblock %}
+{% extends "base_layout.html" %}
 
-<title>Dashboard - Istio App</title>
-
-{% block styles %}
-<style>
-    table {
-        color: #333;
-        background: white;
-        border: 1px solid grey;
-        font-size: 12pt;
-        border-collapse: collapse;
-        width: 100%;
-    }
-
-    table thead th,
-    table tfoot th {
-        color: #fff;
-        background: #466BB0;
-    }
-
-    table caption {
-        padding: .5em;
-    }
-
-    table th,
-    table td {
-        padding: .5em;
-        border: 1px solid lightgrey;
-    }
-</style>
-{% endblock %}
-
-{% block scripts %}
-<script src="static/tailwind/tailwind.css"></script>
-
+{% block title %}
+Dashboard - Istio POSD App
 {% endblock %}
 
 {% block content %}
-<div class="mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex flex-col space-y-5 py-32 mx-auto max-w-7xl">
-        <h3 class="text-2xl font-bold">This is your books dashboard</h3>
-        <p class="text-lg">
-            You are authenticated as: <strong>{{ username }}</strong> with role: <strong>{{ role }}</strong>.
-        </p>
-        <p class="text-lg">
-            Here you can see all the books you have added to your collection.
-        </p>
-
-        <button id="logout-button" 
-                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-            Logout
-        </button>
-
-        <div id="logout-message" class="mt-4 text-lg font-bold"></div>
-    </div>
+<div>
+    <h1 class="text-2xl font-bold mb-4">Welcome to your dashboard!</h1>
+    <p class="text-lg">
+        Here you can see all the books you have added to your collection and their reviews.
+    </p>
 </div>
-
-
-<script>
-    document.getElementById("logout-button").addEventListener("click", async function () {
-        const logoutMessage = document.getElementById("logout-message");
-        logoutMessage.textContent = "";
-
-        try {
-            const response = await fetch("{{ url_for('logout') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.success) {
-                    logoutMessage.textContent = "You have been logged out.";
-                    logoutMessage.style.color = "green";
-                    window.location.href = data.redirect;
-                } else {
-                    logoutMessage.textContent = "Failed to logout. Please try again.";
-                    logoutMessage.style.color = "red";
-                }
-            } else {
-                logoutMessage.textContent = "An error occurred. Please try again.";
-                logoutMessage.style.color = "red";
-            }
-        } catch (err) {
-            logoutMessage.textContent = "A network error occurred. Please try again.";
-            logoutMessage.style.color = "red";
-            console.error(err);
-        }
-    });
-</script>
 {% endblock %}
-

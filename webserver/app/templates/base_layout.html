@@ -1,0 +1,97 @@
+{% block metas %}
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% endblock %}
+
+<title>{% block title %}My App{% endblock %}</title>
+
+{% block styles %}
+<style>
+    body {
+        display: flex;
+        flex-direction: row;
+        min-height: 100vh;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+
+<!-- Vertical Navbar -->
+<nav class="bg-blue-900 w-64 flex-shrink-0 flex flex-col">
+    <div class="bg-blue-800 text-white text-center py-2 h-16 flex items-center justify-center font-semibold text-lg">
+        Menu
+    </div>
+    <div class="flex-1">
+        <ul class="space-y-2 p-4">
+            <li>
+                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                    Dashboard
+                </a>
+            </li>
+            <li>
+                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                    Profile
+                </a>
+            </li>
+            <li>
+                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                    Settings
+                </a>
+            </li>
+            <li>
+                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                    Help
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div style="flex: 1; display: flex; flex-direction: column;">
+    <!-- Horizontal Navbar -->
+    <nav class="bg-blue-800 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="text-white text-lg font-medium">
+            Hi, <strong>{{ username }}</strong> | <span>{{ role }}</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button id="logout-button" 
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="p-6 bg-blue-100 flex-1">
+        {% block content %}
+        {% endblock %}
+    </main>
+</div>
+
+{% block scripts %}
+<script src="static/tailwind/tailwind.css"></script>
+<script>
+    document.getElementById("logout-button").addEventListener("click", async function () {
+        try {
+            const response = await fetch("{{ url_for('logout') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    });
+</script>
+{% endblock %}
