@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {% endblock %}
 
-<title>Login POSD App</title>
+<title>Istio books review</title>
 
 {% block styles %}
 <style>
@@ -77,11 +77,7 @@
 {% block content %}
 <div class="mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex flex-col space-y-5 py-32 mx-auto max-w-7xl">
-        <h3 class="text-2xl">Hello! This is our Istio books review app.</h3>
-        
-        <div class="error-container">
-            <p id="error" style="color: red;"></p>
-        </div>            
+        <h3 class="text-2xl">Hello! This is our Istio books review app.</h3>        
         
         <form method="post" onsubmit="handleLogin(event)" class="space-y-4">
             <div>
@@ -98,6 +94,9 @@
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Login
             </button>
+            <div class="error-container">
+                <p id="error" style="color: red;"></p>
+            </div>
         </form>
     </div>
 </div>

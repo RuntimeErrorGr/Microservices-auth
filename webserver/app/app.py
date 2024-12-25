@@ -1,8 +1,9 @@
 import logging
+import sys
 import os
 from flask import Flask
 from .config import Config
-import sys
+from .auth_routes import auth_bp
 
 __all__ = ["create_app"]
 
@@ -18,6 +19,7 @@ def create_app():
     )
     configure_logging()
     configure_app(app)
+    configure_blueprints(app)
 
     logging.info("Flask Webserver started")
 
@@ -26,6 +28,14 @@ def create_app():
 
 def configure_app(app: Flask):
     app.config.from_object(Config)
+    app.config["SESSION_TYPE"] = "filesystem"
+    app.config["KEYCLOAK_LOGOUT_URL"] = app.config["KEYCLOAK_URL"].replace(
+        "token", "logout"
+    )
+
+
+def configure_blueprints(app: Flask):
+    app.register_blueprint(auth_bp)
 
 
 def configure_logging():
