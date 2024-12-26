@@ -11,10 +11,8 @@ spec:
     - to:
         - operation:
             methods: ["GET"]
-            paths: ["/", "/static/tailwind/tailwind.css"]
+            paths:
+              ["/", "/static/tailwind/tailwind.css", "/books", "/dashboard"]
         - operation:
             methods: ["POST"]
             paths: ["/login", "/logout"]
-        - operation:
-            methods: ["GET"]
-            paths: ["/dashboard"]

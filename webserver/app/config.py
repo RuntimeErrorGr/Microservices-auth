@@ -16,3 +16,4 @@ class Config:
     PROJECT_ROOT: str = os.path.abspath(os.path.dirname(__file__))
     FLASK_DEBUG: bool = os.getenv("FLASK_DEBUG", "false").lower() == "true"
     KEYCLOAK_URL: str = os.getenv("KEYCLOAK_URL")
+    BOOKS_SERVICE_URL: str = os.getenv("BOOKS_SERVICE_URL")

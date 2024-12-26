@@ -92,7 +92,7 @@ def logout():
             headers=headers,
             verify=False,
         )
-        if response.status_code == 204:
+        if response.status_code in [200, 201, 202, 203, 204]:
             session.clear()
             return jsonify({"success": True, "redirect": url_for("auth.index")})
         else:
