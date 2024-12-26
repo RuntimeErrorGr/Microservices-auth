@@ -6,9 +6,66 @@ Dashboard - Books review
 
 {% block content %}
 <div>
-    <h1 class="text-2xl font-bold mb-4">Welcome to your dashboard!</h1>
-    <p class="text-lg">
-        Here you can see all the books you have added to your collection and their reviews.
-    </p>
+    <h1 class="text-2xl font-bold text-center mb-4">Welcome to your dashboard!</h1>
+    <h1 class="text-2xl text-center mt-4">Here you can see all books that have been reviewed by our users</h1>
+    <div class="container mx-auto mt-8">
+        {% if error %}
+            <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
+                {{ error }}
+            </div>
+        {% else %}
+        <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+            <thead>
+                <tr>
+                    <th class="px-6 py-3 border-b">Title</th>
+                    <th class="px-6 py-3 border-b">Author</th>
+                    <th class="px-6 py-3 border-b">Genre</th>
+                    <th class="px-6 py-3 border-b">Publication Date</th>
+                    <th class="px-6 py-3 border-b">Description</th>
+                </tr>
+            </thead>
+            <tbody id="books-table-body">
+            </tbody>
+        </table>        
+        {% endif %}
+    </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", async function () {
+        try {
+            const response = await fetch("/books");
+            if (!response.ok) {
+                throw new Error("Network response was not ok " + response.statusText);
+            }
+            const data = await response.json();
+            const booksTableBody = document.getElementById("books-table-body");
+            booksTableBody.innerHTML = "";
+
+            data.forEach(book => {
+                const row = document.createElement("tr");
+
+                row.innerHTML = `
+                    <td class="px-6 py-4 border-b">${book.title}</td>
+                    <td class="px-6 py-4 border-b">${book.author}</td>
+                    <td class="px-6 py-4 border-b">${book.genre}</td>
+                    <td class="px-6 py-4 border-b">${book.publicationDate}</td>
+                    <td class="px-6 py-4 border-b">${book.description}</td>
+                `;
+
+                booksTableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error("Error fetching books:", error);
+            const booksContainer = document.querySelector(".container");
+            booksContainer.innerHTML = `
+                <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
+                    You may not have the necessary permissions to view this section.
+                </div>
+            `;
+        }
+    });
+</script>
 {% endblock %}
