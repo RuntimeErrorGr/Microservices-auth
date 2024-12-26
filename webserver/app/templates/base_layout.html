@@ -17,7 +17,6 @@
 </style>
 {% endblock %}
 
-
 <!-- Vertical Navbar -->
 <nav class="bg-blue-900 w-64 flex-shrink-0 flex flex-col">
     <div class="bg-blue-800 text-white text-center py-2 h-16 flex items-center justify-center font-semibold text-lg">
@@ -57,7 +56,7 @@
             Hi, <strong>{{ username }}</strong> | <span>{{ role }}</span>
         </div>
         <div class="flex items-center space-x-4">
-            <button id="logout-button" 
+            <button id="logout-button" onClick="handleLogout()"
                     class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">
                 Logout
             </button>
@@ -74,7 +73,7 @@
 {% block scripts %}
 <script src="static/tailwind/tailwind.css"></script>
 <script>
-    document.getElementById("logout-button").addEventListener("click", async function () {
+    window.handleLogout = async function () {
         try {
             const response = await fetch("{{ url_for('auth.logout') }}", {
                 method: "POST",
@@ -88,10 +87,12 @@
                 if (data.success) {
                     window.location.href = data.redirect;
                 }
+            } else {
+                console.error("Logout request failed");
             }
         } catch (err) {
-            console.error(err);
+            console.error("Error during logout:", err);
         }
-    });
+    }
 </script>
 {% endblock %}
