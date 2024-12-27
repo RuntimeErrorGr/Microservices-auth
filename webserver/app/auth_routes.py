@@ -13,8 +13,8 @@ import logging
 
 auth_bp = Blueprint("auth", __name__)
 
-CLIENT_ID = "Istio"
-ADMIN_CLI_ID = "admin-cli"
+ISTIO_CLIENT_ID = "Istio"
+ADMIN_CLIENT_CLI_ID = "admin-cli"
 
 
 @auth_bp.route("/", methods=["GET"])
@@ -32,7 +32,7 @@ def login():
     password = request.form.get("password")
 
     data = {
-        "client_id": CLIENT_ID,
+        "client_id": ISTIO_CLIENT_ID,
         "username": username,
         "password": password,
         "grant_type": "password",
@@ -53,9 +53,9 @@ def login():
             session["username"] = username
             admin_token = get_admin_token()
             user_id = get_user_id(admin_token, username)
-            client_id = get_client_id(admin_token, CLIENT_ID)
-            roles = get_user_roles(admin_token, user_id, client_id)
-            session["role"] = roles[0]["name"]
+            client_id = get_client_id(admin_token)
+            session["role"] = "-".join(get_user_roles(admin_token, user_id, client_id))
+            logging.info("Role: %s", session["role"])
             return jsonify({"success": True, "redirect": url_for("auth.dashboard")})
         else:
             logging.error("Invalid credentials")
@@ -90,7 +90,7 @@ def logout():
         return jsonify({"success": False, "message": "No active session"}), 400
 
     data = {
-        "client_id": CLIENT_ID,
+        "client_id": ISTIO_CLIENT_ID,
         "refresh_token": session.get("refresh_token"),
     }
     headers = {
@@ -121,7 +121,7 @@ def logout():
 
 def get_admin_token():
     data = {
-        "client_id": ADMIN_CLI_ID,
+        "client_id": ADMIN_CLIENT_CLI_ID,
         "username": "admin",
         "password": "admin",
         "grant_type": "password",
@@ -170,11 +170,11 @@ def get_user_id(admin_token, username):
         return None
 
 
-def get_client_id(admin_token, client_id):
+def get_client_id(admin_token):
     headers = {
         "Authorization": f"Bearer {admin_token}",
     }
-    params = {"clientId": client_id}
+    params = {"clientId": ISTIO_CLIENT_ID}
     try:
         response = requests.get(
             current_app.config["KEYCLOAK_CLIENTS_URL"],
@@ -187,7 +187,7 @@ def get_client_id(admin_token, client_id):
 
         clients = response.json()
         for client in clients:
-            if client.get("clientId") == client_id:
+            if client.get("clientId") == ISTIO_CLIENT_ID:
                 return client.get("id")
     except requests.exceptions.RequestException:
         logging.error("Client not found")
@@ -207,8 +207,7 @@ def get_user_roles(admin_token, user_id, client_id):
             timeout=1,
         )
         logging.info("Keycloak response: %s", response.text)
-
-        return response.json()
+        return [role.get("name") for role in response.json()]
     except requests.exceptions.RequestException:
         logging.error("Roles not found")
         return None

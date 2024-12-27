@@ -17,11 +17,9 @@ Dashboard - Books review
         <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
             <thead>
                 <tr>
-                    <th class="px-6 py-3 border-b">Title</th>
-                    <th class="px-6 py-3 border-b">Author</th>
-                    <th class="px-6 py-3 border-b">Genre</th>
-                    <th class="px-6 py-3 border-b">Publication Date</th>
-                    <th class="px-6 py-3 border-b">Description</th>
+                    <th class="px-6 py-3 border-b text-center">Title</th>
+                    <th class="px-6 py-3 border-b text-center">Author</th>
+                    <th class="px-6 py-3 border-b text-center">Publication Date</th>
                 </tr>
             </thead>
             <tbody id="books-table-body">
@@ -47,14 +45,18 @@ Dashboard - Books review
 
             data.forEach(book => {
                 const row = document.createElement("tr");
-
+                row.classList.add("cursor-pointer", "hover:bg-gray-100");
+                
                 row.innerHTML = `
                     <td class="px-6 py-4 border-b">${book.title}</td>
                     <td class="px-6 py-4 border-b">${book.author}</td>
-                    <td class="px-6 py-4 border-b">${book.genre}</td>
                     <td class="px-6 py-4 border-b">${book.publicationDate}</td>
-                    <td class="px-6 py-4 border-b">${book.description}</td>
                 `;
+
+                row.addEventListener("click", () => {
+                    const isbn = book.isbn;
+                    window.location.href = `/books/${isbn}`;
+                });
 
                 booksTableBody.appendChild(row);
             });
@@ -63,7 +65,7 @@ Dashboard - Books review
             const booksContainer = document.querySelector(".container");
             booksContainer.innerHTML = `
                 <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                    You may not have the necessary permissions to view this section.
+                    Ups! Your role <span class="font-bold">{{ role }}</span> does not have permission to view books.
                 </div>
             `;
         }

@@ -25,7 +25,7 @@
     <div class="flex-1">
         <ul class="space-y-2 p-4">
             <li>
-                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                <a href="{{ url_for('auth.dashboard') }}" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
                     Dashboard
                 </a>
             </li>
@@ -77,7 +77,7 @@
 </div>
 
 {% block scripts %}
-<script src="static/tailwind/tailwind.css"></script>
+<script src="{{ url_for('static', filename='tailwind/tailwind.css') }}"></script>
 <script>
     window.handleLogout = async function () {
         try {
