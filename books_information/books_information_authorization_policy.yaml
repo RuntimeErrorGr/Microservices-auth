@@ -1,0 +1,28 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: books-information
+spec:
+  selector:
+    matchLabels:
+      app: books-information
+  action: ALLOW
+  rules:
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/books"]
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/books/*"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["user"]
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/reviews/by-isbn/*"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["user", "verified"]
