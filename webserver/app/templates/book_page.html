@@ -7,35 +7,33 @@ Book Details - {{ book.title }}
 {% block content %}
 <div>
     <h1 class="text-2xl font-bold text-center mb-4">{{ book.title }}</h1>
-    <h2 class="text-lg font-medium text-center mb-8">Details</h2>
     <div class="container mx-auto">
+        <h3 class="text-xl font-semibold mb-4">Description</h3>
         <!-- Book Details Table -->
         <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg mb-6">
+            <thead>
+                <tr>
+                    <th class="px-6 py-4 border-b text-center">Author</th>
+                    <th class="px-6 py-4 border-b text-center">Genre</th>
+                    <th class="px-6 py-4 border-b text-center">Publication Date</th>
+                    <th class="px-6 py-4 border-b text-center">ISBN</th>
+                </tr>
+            </thead>
             <tbody>
                 <tr>
-                    <td class="px-6 py-4 border-b text-center">Author</td>
-                    <td class="px-6 py-4 border-b">{{ book.author }}</td>
-                </tr>
-                <tr>
-                    <td class="px-6 py-4 border-b text-center">Genre</td>
-                    <td class="px-6 py-4 border-b">{{ book.genre }}</td>
-                </tr>
-                <tr>
-                    <td class="px-6 py-4 border-b text-center">Publication Date</td>
-                    <td class="px-6 py-4 border-b">{{ book.publicationDate }}</td>
-                </tr>
-                <tr>
-                    <td class="px-6 py-4 border-b text-center">ISBN</td>
-                    <td class="px-6 py-4 border-b">{{ book.isbn }}</td>
+                    <td class="px-6 py-4 border-b text-center">{{ book.author }}</td>
+                    <td class="px-6 py-4 border-b text-center">{{ book.genre }}</td>
+                    <td class="px-6 py-4 border-b text-center">{{ book.publicationDate }}</td>
+                    <td class="px-6 py-4 border-b text-center">{{ book.isbn }}</td>
                 </tr>
             </tbody>
-        </table>
+        </table>        
 
         <!-- Book Description -->
-        <div class="mb-8">
-            <h3 class="text-xl font-semibold mb-4">Description</h3>
+        <h3 class="text-xl font-semibold mb-4">Description</h3>
+        <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
             <p class="text-gray-700">{{ book.description }}</p>
-        </div>
+        </div>                
 
         <!-- Reviews Section -->
         <div id="reviews-section">
@@ -43,10 +41,9 @@ Book Details - {{ book.title }}
             <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
                 <thead>
                     <tr>
-                        <th class="px-6 py-3 border-b">Reviewer</th>
-                        <th class="px-6 py-3 border-b">Rating</th>
-                        <th class="px-6 py-3 border-b">Review</th>
-                        <th class="px-6 py-3 border-b">Date</th>
+                        <th class="px-6 py-3 border-b text-center">Reviewer</th>
+                        <th class="px-6 py-3 border-b text-center">Review</th>
+                        <th class="px-6 py-3 border-b text-center">Reviewed at</th>
                     </tr>
                 </thead>
                 <tbody id="reviews-table-body">
@@ -77,10 +74,9 @@ Book Details - {{ book.title }}
                 const row = document.createElement("tr");
 
                 row.innerHTML = `
-                    <td class="px-6 py-4 border-b">${review.reviewer}</td>
-                    <td class="px-6 py-4 border-b">${review.rating}</td>
-                    <td class="px-6 py-4 border-b">${review.text}</td>
-                    <td class="px-6 py-4 border-b">${review.date}</td>
+                    <td class="px-6 py-4 border-b text-center">${review.reviewer}</td>
+                    <td class="px-6 py-4 border-b text-center">${review.text}</td>
+                    <td class="px-6 py-4 border-b text-center">${review.date}</td>
                 `;
 
                 reviewsTableBody.appendChild(row);

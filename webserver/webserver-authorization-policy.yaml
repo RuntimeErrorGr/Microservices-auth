@@ -16,6 +16,7 @@ spec:
                 "/",
                 "/static/tailwind/tailwind.css",
                 "/books",
+                "/books/*",
                 "/dashboard",
                 "/login",
               ]

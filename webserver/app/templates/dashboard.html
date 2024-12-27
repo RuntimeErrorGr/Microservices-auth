@@ -48,9 +48,9 @@ Dashboard - Books review
                 row.classList.add("cursor-pointer", "hover:bg-gray-100");
                 
                 row.innerHTML = `
-                    <td class="px-6 py-4 border-b">${book.title}</td>
-                    <td class="px-6 py-4 border-b">${book.author}</td>
-                    <td class="px-6 py-4 border-b">${book.publicationDate}</td>
+                    <td class="px-6 py-4 border-b text-center">${book.title}</td>
+                    <td class="px-6 py-4 border-b text-center">${book.author}</td>
+                    <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
                 `;
 
                 row.addEventListener("click", () => {
