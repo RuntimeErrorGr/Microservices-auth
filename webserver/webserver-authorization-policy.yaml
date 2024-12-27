@@ -12,7 +12,13 @@ spec:
         - operation:
             methods: ["GET"]
             paths:
-              ["/", "/static/tailwind/tailwind.css", "/books", "/dashboard"]
+              [
+                "/",
+                "/static/tailwind/tailwind.css",
+                "/books",
+                "/dashboard",
+                "/login",
+              ]
         - operation:
             methods: ["POST"]
             paths: ["/login", "/logout"]

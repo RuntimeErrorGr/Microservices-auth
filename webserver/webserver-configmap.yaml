@@ -5,5 +5,5 @@ metadata:
 data:
   FLASK_APP: "app/__init__.py"
   PROJECT_NAME: "webserver"
-  KEYCLOAK_URL: "https://posd-app-keycloak.com/realms/Istio/protocol/openid-connect/token"
+  KEYCLOAK_URL: "https://posd-app-keycloak.com"
   BOOKS_SERVICE_URL: "http://books-information-service:8080"

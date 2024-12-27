@@ -18,7 +18,7 @@
 {% endblock %}
 
 <!-- Vertical Navbar -->
-<nav class="bg-blue-900 w-64 flex-shrink-0 flex flex-col">
+<nav class="bg-blue-900 w-64 flex-shrink-0 flex flex-col rounded-md">
     <div class="bg-blue-800 text-white text-center py-2 h-16 flex items-center justify-center font-semibold text-lg">
         Menu
     </div>
@@ -52,14 +52,20 @@
 <div style="flex: 1; display: flex; flex-direction: column;">
     <!-- Horizontal Navbar -->
     <nav class="bg-blue-800 px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <div class="text-white text-lg font-medium">
-            Hi, <strong>{{ username }}</strong> | <span>{{ role }}</span>
+        <div class="text-white text-lg font-medium rounded-md">
+            {% if role == 'guest' %}
+                Looks like you are just passing by. If you want to unblock more features, <a href="#" class="text-white rounded-md hover:bg-blue-100 font-bold underline" onclick="handleLogout()">login</a>.
+            {% else %}
+                Hi, <strong>{{ username }}</strong> <span class="text-blue-300"> | {{ role }}</span>
+            {% endif %}
         </div>
         <div class="flex items-center space-x-4">
-            <button id="logout-button" onClick="handleLogout()"
-                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">
-                Logout
-            </button>
+            {% if role != 'guest' %}
+                <button id="logout-button" onClick="handleLogout()"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md shadow-sm">
+                    Logout
+                </button>
+            {% endif %}
         </div>
     </nav>
 

@@ -1,6 +1,7 @@
 import logging
 import sys
 import os
+import requests
 from flask import Flask
 from .config import Config
 from .auth_routes import auth_bp
@@ -30,9 +31,6 @@ def create_app():
 def configure_app(app: Flask):
     app.config.from_object(Config)
     app.config["SESSION_TYPE"] = "filesystem"
-    app.config["KEYCLOAK_LOGOUT_URL"] = app.config["KEYCLOAK_URL"].replace(
-        "token", "logout"
-    )
 
 
 def configure_blueprints(app: Flask):
