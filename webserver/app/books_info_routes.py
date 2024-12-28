@@ -16,7 +16,7 @@ def make_authenticated_request(url):
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-
+    logging.info("Headers: %s", headers)
     try:
         response = requests.get(url, timeout=5, headers=headers)
         if response.status_code in [401, 403]:

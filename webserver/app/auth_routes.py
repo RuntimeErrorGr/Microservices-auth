@@ -36,6 +36,7 @@ def login():
         "username": username,
         "password": password,
         "grant_type": "password",
+        "scope:": "profile roles",
     }
     try:
         response = requests.post(
