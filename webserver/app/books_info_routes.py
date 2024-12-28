@@ -24,6 +24,10 @@ def make_authenticated_request(url):
                 f"Failed to fetch data: {response.status_code} {response.text}"
             )
             raise NoPermissionError
+
+        if not response.headers.get("Content-Type") == "application/json":
+            return response.text
+
         return response.json()
     except requests.exceptions.RequestException as e:
         logging.error(f"Error connecting to books service: {e}")
@@ -49,17 +53,20 @@ def index():
 
 
 @books_info_bp.route("/<isbn>", methods=["GET"])
-def get_book(isbn):
+def book_page(isbn):
+    username = session.get("username")
+    role = session.get("role")
+    return render_template("book_page.html", username=username, role=role, isbn=isbn)
+
+
+@books_info_bp.route("/<isbn>/details", methods=["GET"])
+def get_book_details(isbn):
     try:
         book_data = make_authenticated_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/{isbn}"
         )
-        username = session.get("username")
-        role = session.get("role")
         logging.info(f"Fetched book data: {book_data}")
-        return render_template(
-            "book_page.html", book=book_data, username=username, role=role
-        )
+        return jsonify(book_data)
     except NoPermissionError:
         return (
             jsonify({"error": "You do not have permission to access this resource."}),
@@ -72,19 +79,17 @@ def get_book(isbn):
 
 @books_info_bp.route("/<isbn>/reviews", methods=["GET"])
 def get_book_reviews(isbn):
-
     def transform_reviews(input_data):
-        transformed_data = []
-        for review in input_data:
-            transformed_data.append(
-                {
-                    "reviewer": review["user"]["username"],
-                    "text": review["reviewText"],
-                    "date": datetime.fromisoformat(review["reviewDate"]).strftime(
-                        "%Y-%m-%d %H:%M:%S"
-                    ),
-                }
-            )
+        transformed_data = [
+            {
+                "reviewer": review["user"]["username"],
+                "text": review["reviewText"],
+                "date": datetime.fromisoformat(review["reviewDate"]).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+            }
+            for review in input_data
+        ]
         return transformed_data
 
     try:

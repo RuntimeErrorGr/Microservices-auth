@@ -36,42 +36,23 @@ Dashboard - Books review
     document.addEventListener("DOMContentLoaded", async function () {
         try {
             const response = await fetch("/books");
-            if (!response.ok) {
-                throw new Error("Network response was not ok " + response.statusText);
-            }
+            if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+
             const data = await response.json();
             const booksTableBody = document.getElementById("books-table-body");
-            booksTableBody.innerHTML = "";
 
+            booksTableBody.innerHTML = "";
             data.forEach(book => {
                 const row = document.createElement("tr");
                 row.classList.add("cursor-pointer", "hover:bg-gray-100");
-
                 row.innerHTML = `
                     <td class="px-6 py-4 border-b text-center">${book.title}</td>
                     <td class="px-6 py-4 border-b text-center">${book.author}</td>
                     <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
                 `;
-
-                row.addEventListener("click", async () => {
-                    const isbn = book.isbn;
-                    try {
-                        const bookResponse = await fetch(`/books/${isbn}`);
-                        if (bookResponse.status === 403) {
-                            throw new Error("Failed to fetch book data.");
-                        }
-                        window.location.href = `/books/${isbn}`;
-                    } catch (error) {
-                        console.error("Error fetching book data:", error);
-                        const booksContainer = document.querySelector(".container");
-                        booksContainer.innerHTML = `
-                            <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                                Ups! Your role <span class="font-bold">{{ role }}</span> does not have permission to view this book.
-                            </div>
-                        `;
-                    }
+                row.addEventListener("click", () => {
+                    window.location.href = `/books/${book.isbn}`;
                 });
-
                 booksTableBody.appendChild(row);
             });
         } catch (error) {
@@ -79,7 +60,7 @@ Dashboard - Books review
             const booksContainer = document.querySelector(".container");
             booksContainer.innerHTML = `
                 <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                    Ups! Your role <span class="font-bold">{{ role }}</span> does not have permission to view books.
+                    Error fetching books: ${error.message}.
                 </div>
             `;
         }

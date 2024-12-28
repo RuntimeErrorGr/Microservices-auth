@@ -22,6 +22,10 @@ public class BooksService {
         return booksRepository.findByIsbn(isbn);
     }
 
+    public String findTitleByIsbn(String isbn){
+        return booksRepository.findByIsbn(isbn).getTitle();
+    }
+
     public Book addBook(Book newBook){
         return booksRepository.save(newBook);
     }

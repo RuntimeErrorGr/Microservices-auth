@@ -77,6 +77,11 @@
 </div>
 
 {% block scripts %}
+<script>
+    function generatePermissionErrorMessage(roleName, actionName, resourceName) {
+        return `Your role <strong>${roleName}</strong> does not have permission to <strong>${actionName}</strong> the resource <strong>${resourceName}</strong>.`;
+    }
+</script>
 <script src="{{ url_for('static', filename='tailwind/tailwind.css') }}"></script>
 <script>
     window.handleLogout = async function () {
