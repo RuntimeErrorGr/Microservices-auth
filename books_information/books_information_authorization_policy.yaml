@@ -37,4 +37,6 @@ spec:
             paths: ["/reviews/by-isbn/*"]
       when:
         - key: request.auth.claims[resource_access][Istio][roles]
-          values: ["user", "verified"]
+          values: ["user"]
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["verified"]
