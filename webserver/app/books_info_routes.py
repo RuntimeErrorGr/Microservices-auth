@@ -56,7 +56,27 @@ def index():
 def book_page(isbn):
     username = session.get("username")
     role = session.get("role")
-    return render_template("book_page.html", username=username, role=role, isbn=isbn)
+    try:
+        title = make_authenticated_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/title/{isbn}"
+        )
+        logging.info(f"Fetched title: {title}")
+        return render_template(
+            "book_page.html",
+            title=title,
+            isbn=isbn,
+            username=username,
+            role=role,
+        )
+    except NoPermissionError:
+        logging.error("User does not have permission to access the title for %s", isbn)
+        return render_template(
+            "book_page.html",
+            title="Loading...",
+            isbn=isbn,
+            username=username,
+            role=role,
+        )
 
 
 @books_info_bp.route("/<isbn>/details", methods=["GET"])
