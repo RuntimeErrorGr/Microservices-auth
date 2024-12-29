@@ -104,6 +104,13 @@ Response should be:
     }
 ]
 ```
+### (29.12.2024)
+1. Keycloak persistent storage is in kubernetes now.
+2. We have a minimal frontend with login page, dashboard, book page and a generic layout.
+   ![app3](https://github.com/user-attachments/assets/9f5864bb-0d44-40b5-8b5f-b54b49fd84e7)
+   ![app1](https://github.com/user-attachments/assets/d53e6f6f-b043-46dc-b6c6-e3857127ad43)
+   ![app2](https://github.com/user-attachments/assets/8753ade2-47c4-4f08-b519-93dfa90d6be1)
+3. We have 3 roles: guest, user and verified-user and view operation on books and reviews. The rest of CRUD operations are TBD.
 
 ## How to deploy the whole thing:
 
