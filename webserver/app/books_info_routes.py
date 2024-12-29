@@ -16,7 +16,6 @@ def make_authenticated_request(url):
         "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/x-www-form-urlencoded",
     }
-    logging.info("Headers: %s", headers)
     try:
         response = requests.get(url, timeout=5, headers=headers)
         if response.status_code in [401, 403]:
@@ -27,7 +26,7 @@ def make_authenticated_request(url):
 
         if not response.headers.get("Content-Type") == "application/json":
             return response.text
-
+        logging.info(f"Response: {response.json()}")
         return response.json()
     except requests.exceptions.RequestException as e:
         logging.error(f"Error connecting to books service: {e}")
@@ -135,7 +134,7 @@ def get_book_reviews(isbn):
 def get_book_ratings(isbn):
     try:
         ratings_data = make_authenticated_request(
-            f"{current_app.config['BOOKS_SERVICE_URL']}/ratings/{isbn}"
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/ratings/{isbn}"
         )
         logging.info(f"Fetched ratings data: {ratings_data}")
         return jsonify(ratings_data)
