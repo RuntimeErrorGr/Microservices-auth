@@ -2,6 +2,7 @@ package com.stefan.books_information.services;
 
 import com.stefan.books_information.exceptions.BookNotFoundException;
 import com.stefan.books_information.models.Book;
+import com.stefan.books_information.models.Rating;
 import com.stefan.books_information.repositories.BooksRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,10 @@ public class BooksService {
 
     public String findTitleByIsbn(String isbn){
         return booksRepository.findByIsbn(isbn).getTitle();
+    }
+
+    public List<Rating> findRatingsByIsbn(String isbn) {
+        return booksRepository.findByIsbn(isbn).getRatings();
     }
 
     public Book addBook(Book newBook){

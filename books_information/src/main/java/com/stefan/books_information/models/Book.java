@@ -8,6 +8,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -27,7 +29,12 @@ public class Book {
     private LocalDate publicationDate;
     private String isbn;
     private String description;
-    @OneToMany(mappedBy = "book")
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Review> reviews;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Rating> ratings;
 }

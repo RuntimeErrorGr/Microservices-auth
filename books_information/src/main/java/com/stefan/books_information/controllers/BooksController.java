@@ -1,6 +1,7 @@
 package com.stefan.books_information.controllers;
 
 import com.stefan.books_information.models.Book;
+import com.stefan.books_information.models.Rating;
 import com.stefan.books_information.services.BooksService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +29,11 @@ public class BooksController {
     @GetMapping("{isbn}")
     public Book getBookByIsbn(@PathVariable String isbn) {
         return booksService.findByIsbn(isbn);
+    }
+
+    @GetMapping("/ratings/{isbn}")
+    public List<Rating> getBookRatingsByIsbn(@PathVariable String isbn) {
+        return booksService.findRatingsByIsbn(isbn);
     }
 
     @GetMapping("/title/{isbn}")
