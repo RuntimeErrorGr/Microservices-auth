@@ -23,7 +23,7 @@ spec:
     - to:
         - operation:
             methods: ["GET"]
-            paths: ["/books", "/books/title/*"]
+            paths: ["/books", "/books/title/*", "/books/ratings/*"]
     - to:
         - operation:
             methods: ["GET"]

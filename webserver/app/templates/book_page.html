@@ -7,6 +7,9 @@ Book Details - {{ isbn }}
 {% block content %}
 <div>
     <h1 id="book-title" class="text-2xl font-bold text-center mb-4">{{ title }}</h1>
+    <div id="book-rating" class="text-center text-sm mb-4">
+    </div>
+    
     <div class="container mx-auto">
         <!-- Book Details Section -->
         <h3 class="text-xl font-semibold mb-4">Details</h3>
@@ -64,94 +67,120 @@ Book Details - {{ isbn }}
     document.addEventListener("DOMContentLoaded", async function () {
         const isbn = "{{ isbn }}";
         const userRole = "{{ role }}";
+        const rating = parseFloat("{{ rating }}");
 
-        // Fetch and display book details
-        try {
-            const detailsResponse = await fetch(`/books/${isbn}/details`);
-            if (detailsResponse.ok) {
-                const book = await detailsResponse.json();
-                document.getElementById("book-details").innerHTML = `
-                    <tr>
-                        <td class="px-6 py-4 border-b text-center">${book.author}</td>
-                        <td class="px-6 py-4 border-b text-center">${book.genre}</td>
-                        <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
-                        <td class="px-6 py-4 border-b text-center">${book.isbn}</td>
-                    </tr>
-                `;
-                document.getElementById("book-description").textContent = book.description;
-            } else if (detailsResponse.status === 403) {
-                document.getElementById("book-details-section").innerHTML = `
-                    <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
-                        <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                            ${generatePermissionErrorMessage(userRole, "view", "book details")}
-                        </div>
-                    </div>
-                `;
-                document.getElementById("book-description-section").innerHTML = `
-                    <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
-                        <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                            ${generatePermissionErrorMessage(userRole, "view", "book description")}
-                        </div>
-                    </div>
-                `;
-            } else {
-                throw new Error("Failed to fetch book details.");
-            }
-        } catch (error) {
-            console.error("Error fetching book details:", error);
-            document.getElementById("book-details-section").innerHTML = `
-                <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
-                    <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                        ${error.message}
-                    </div>
-                </div>
-            `;
-            document.getElementById("book-details-description").innerHTML = `
-                <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
-                    <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                        ${error.message}
-                    </div>
-                </div>
-            `;
-        }
-
-        // Fetch and display book reviews
-        try {
-            const reviewsResponse = await fetch(`/books/${isbn}/reviews`);
-            if (reviewsResponse.ok) {
-                const reviews = await reviewsResponse.json();
-                const reviewsTableBody = document.getElementById("reviews-table-body");
-                reviewsTableBody.innerHTML = "";
-                reviews.forEach(review => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td class="px-6 py-4 border-b text-center">${review.reviewer}</td>
-                        <td class="px-6 py-4 border-b text-center">${review.text}</td>
-                        <td class="px-6 py-4 border-b text-center">${review.date}</td>
+        // Fetch and render book details
+        async function fetchAndRenderBookDetails() {
+            try {
+                const response = await fetch(`/books/${isbn}/details`);
+                if (response.ok) {
+                    const book = await response.json();
+                    document.getElementById("book-details").innerHTML = `
+                        <tr>
+                            <td class="px-6 py-4 border-b text-center">${book.author}</td>
+                            <td class="px-6 py-4 border-b text-center">${book.genre}</td>
+                            <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
+                            <td class="px-6 py-4 border-b text-center">${book.isbn}</td>
+                        </tr>
                     `;
-                    reviewsTableBody.appendChild(row);
-                });
-            } else if (reviewsResponse.status === 403) {
-                document.getElementById("reviews-section").innerHTML = `
-                    <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
-                        <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                            ${generatePermissionErrorMessage(userRole, "view", "book reviews")}
-                        </div>
-                    </div>
-                `;
-            } else {
-                throw new Error("Failed to fetch reviews.");
+                    document.getElementById("book-description").textContent = book.description;
+                } else if (response.status === 403) {
+                    displayErrorMessageWithWhiteBorder(
+                        "book-details-section",
+                        generatePermissionErrorMessage(userRole, "view", "book details")
+                    );
+                    displayErrorMessageWithWhiteBorder(
+                        "book-description-section",
+                        generatePermissionErrorMessage(userRole, "view", "book description")
+                    );
+                } else {
+                    throw new Error("Failed to fetch book details.");
+                }
+            } catch (error) {
+                console.error("Error fetching book details:", error);
+                displayErrorMessage("book-details-section", error.message);
+                displayErrorMessage("book-description-section", error.message);
             }
-        } catch (error) {
-            console.error("Error fetching reviews:", error);
-            document.getElementById("reviews-section").innerHTML = `
-                <div class="mb-8 bg-white border border-gray-200 shadow-md rounded-lg px-6 py-10">
-                    <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                        ${error.message}
-                    </div>
-                </div>
-            `;
         }
+
+        // Fetch and render book reviews
+        async function fetchAndRenderBookReviews() {
+            try {
+                const response = await fetch(`/books/${isbn}/reviews`);
+                if (response.ok) {
+                    const reviews = await response.json();
+                    const reviewsTableBody = document.getElementById("reviews-table-body");
+                    reviewsTableBody.innerHTML = "";
+                    reviews.forEach(review => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td class="px-6 py-4 border-b text-center">${review.reviewer}</td>
+                            <td class="px-6 py-4 border-b text-center">${review.text}</td>
+                            <td class="px-6 py-4 border-b text-center">${review.date}</td>
+                        `;
+                        reviewsTableBody.appendChild(row);
+                    });
+                } else if (response.status === 403) {
+                    displayErrorMessageWithWhiteBorder(
+                        "reviews-section",
+                        generatePermissionErrorMessage(userRole, "view", "book reviews")
+                    );
+                } else {
+                    throw new Error("Failed to fetch reviews.");
+                }
+            } catch (error) {
+                console.error("Error fetching reviews:", error);
+                displayErrorMessage("reviews-section", error.message);
+            }
+        }
+
+        async function fetchAndRenderBookRating() {
+            try {
+                const response = await fetch(`/books/${isbn}/ratings`);
+                if (response.ok) {
+                    const rating = await response.json();
+                    const ratingElement = document.getElementById("book-rating");
+                    const averageRating = calculateAverageRating(ratingsData);
+                    if (averageRating < 0) {
+                        displayErrorMessage(
+                            "book-rating",
+                            generatePermissionErrorMessage(userRole, "view", "book average rating")
+                        );
+                    } else {
+                        const fullStars = Math.floor(averageRating);
+                        const halfStar = averageRating - fullStars >= 0.5 ? 1 : 0;
+                        const emptyStars = 5 - fullStars - halfStar;
+
+                        ratingElement.innerHTML = `
+                            ${'<span class="text-yellow-500">&#9733;</span>'.repeat(fullStars)}
+                            ${halfStar ? '<span class="text-yellow-500">&#9734;</span>' : ''}
+                            ${'<span class="text-gray-400">&#9734;</span>'.repeat(emptyStars)}
+                        `;
+                    }
+                } else if (response.status === 403) {
+                    displayErrorMessage(
+                        "book-rating",
+                        generatePermissionErrorMessage(userRole, "view", "book average rating")
+                    );
+                } else {
+                    throw new Error("Failed to fetch book rating.");
+                }
+            } catch (error) {
+                console.error("Error fetching book rating:", error);
+                displayErrorMessage("book-rating", error.message);
+            }
+        }
+
+        function calculateAverageRating(ratingsData) {
+            if (ratingsData.length === 0) return 0;
+            const totalRating = ratingsData.reduce((sum, rating) => sum + rating.rating, 0);
+            return Math.round((totalRating / ratingsData.length) * 100) / 100;
+        }
+
+        fetchAndRenderBookDetails();
+        fetchAndRenderBookReviews();
+        fetchAndRenderBookRating();
+        
     });
 </script>
 {% endblock %}

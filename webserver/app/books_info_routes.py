@@ -69,7 +69,9 @@ def book_page(isbn):
             role=role,
         )
     except NoPermissionError:
-        logging.error("User does not have permission to access the title for %s", isbn)
+        logging.error(
+            "User does not have permission to access the presentation page for %s", isbn
+        )
         return render_template(
             "book_page.html",
             title="Loading...",
@@ -116,8 +118,8 @@ def get_book_reviews(isbn):
         json_response = make_authenticated_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/by-isbn/{isbn}"
         )
+        logging.info(f"Fetched reviews data: {json_response}")
         reviews_data = transform_reviews(json_response)
-        logging.info(f"Fetched reviews data: {reviews_data}")
         return jsonify(reviews_data)
     except NoPermissionError:
         return (
@@ -127,3 +129,21 @@ def get_book_reviews(isbn):
     except requests.exceptions.RequestException as e:
         logging.error(f"Error connecting to books service: {e}")
         return jsonify({"error": "Error fetching reviews data."}), 500
+
+
+@books_info_bp.route("/<isbn>/ratings", methods=["GET"])
+def get_book_ratings(isbn):
+    try:
+        ratings_data = make_authenticated_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/ratings/{isbn}"
+        )
+        logging.info(f"Fetched ratings data: {ratings_data}")
+        return jsonify(ratings_data)
+    except NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to access this resource."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error fetching ratings data."}), 500
