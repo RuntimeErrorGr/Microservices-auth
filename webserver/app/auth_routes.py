@@ -10,11 +10,9 @@ from flask import (
 )
 import requests
 import logging
+from . import routes_utils as utils
 
 auth_bp = Blueprint("auth", __name__)
-
-ISTIO_CLIENT_ID = "Istio"
-ADMIN_CLIENT_CLI_ID = "admin-cli"
 
 
 @auth_bp.route("/", methods=["GET"])
@@ -32,7 +30,7 @@ def login():
     password = request.form.get("password")
 
     data = {
-        "client_id": ISTIO_CLIENT_ID,
+        "client_id": utils.ISTIO_CLIENT_ID,
         "username": username,
         "password": password,
         "grant_type": "password",
@@ -52,10 +50,12 @@ def login():
             session["Authorization"] = token_data["access_token"]
             session["refresh_token"] = token_data["refresh_token"]
             session["username"] = username
-            admin_token = get_admin_token()
-            user_id = get_user_id(admin_token, username)
-            client_id = get_client_id(admin_token)
-            session["role"] = "-".join(get_user_roles(admin_token, user_id, client_id))
+            admin_token = utils.get_admin_token()
+            user_id = utils.get_user_id(admin_token, username)
+            client_id = utils.get_client_id(admin_token)
+            session["role"] = "-".join(
+                utils.get_user_roles(admin_token, user_id, client_id)
+            )
             logging.info("Role: %s", session["role"])
             return jsonify({"success": True, "redirect": url_for("auth.dashboard")})
         else:
@@ -91,7 +91,7 @@ def logout():
         return jsonify({"success": False, "message": "No active session"}), 400
 
     data = {
-        "client_id": ISTIO_CLIENT_ID,
+        "client_id": utils.ISTIO_CLIENT_ID,
         "refresh_token": session.get("refresh_token"),
     }
     headers = {
@@ -118,97 +118,3 @@ def logout():
     except requests.exceptions.RequestException as e:
         logging.error(f"Error during logout: {e}")
         return jsonify({"success": False, "message": "Error during logout"}), 500
-
-
-def get_admin_token():
-    data = {
-        "client_id": ADMIN_CLIENT_CLI_ID,
-        "username": "admin",
-        "password": "admin",
-        "grant_type": "password",
-    }
-    try:
-        response = requests.post(
-            current_app.config["KEYCLOAK_REALM_MASTER_OPENID_TOKEN_URL"],
-            data=data,
-            verify=False,
-            timeout=1,
-        )
-        logging.info("Keycloak response: %s", response.text)
-
-        if response.status_code == 200:
-            return response.json().get("access_token")
-        else:
-            logging.error("Invalid credentials")
-            return None
-    except requests.exceptions.RequestException:
-        logging.error("Invalid credentials")
-        return None
-
-
-def get_user_id(admin_token, username):
-    headers = {
-        "Authorization": f"Bearer {admin_token}",
-    }
-    params = {"username": username}
-    try:
-        response = requests.get(
-            current_app.config["KEYCLOAK_USERS_URL"],
-            headers=headers,
-            params=params,
-            verify=False,
-            timeout=1,
-        )
-        logging.info("Keycloak response: %s", response.text)
-
-        if response.status_code == 200:
-            return response.json()[0].get("id")
-        else:
-            logging.error("User not found")
-            return None
-    except requests.exceptions.RequestException:
-        logging.error("User not found")
-        return None
-
-
-def get_client_id(admin_token):
-    headers = {
-        "Authorization": f"Bearer {admin_token}",
-    }
-    params = {"clientId": ISTIO_CLIENT_ID}
-    try:
-        response = requests.get(
-            current_app.config["KEYCLOAK_CLIENTS_URL"],
-            headers=headers,
-            params=params,
-            verify=False,
-            timeout=1,
-        )
-        logging.info("Keycloak response: %s", response.text)
-
-        clients = response.json()
-        for client in clients:
-            if client.get("clientId") == ISTIO_CLIENT_ID:
-                return client.get("id")
-    except requests.exceptions.RequestException:
-        logging.error("Client not found")
-        return None
-
-
-def get_user_roles(admin_token, user_id, client_id):
-    roles_url = f"{current_app.config['KEYCLOAK_USERS_URL']}/{user_id}/role-mappings/clients/{client_id}"
-    headers = {
-        "Authorization": f"Bearer {admin_token}",
-    }
-    try:
-        response = requests.get(
-            roles_url,
-            headers=headers,
-            verify=False,
-            timeout=1,
-        )
-        logging.info("Keycloak response: %s", response.text)
-        return [role.get("name") for role in response.json()]
-    except requests.exceptions.RequestException:
-        logging.error("Roles not found")
-        return None

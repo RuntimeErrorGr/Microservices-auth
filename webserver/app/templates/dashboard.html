@@ -8,7 +8,9 @@ Dashboard - Books review
 <div>
     <h1 class="text-2xl font-bold text-center mb-4">Welcome to the dashboard!</h1>
     <h1 class="text-2xl text-center mt-4">Here you can see all books that have been reviewed by our users</h1>
+
     <div class="container mx-auto mt-8">
+        <button id="add-new-book-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 mb-4">Request a new book</button>
         {% if error %}
             <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
                 {{ error }}
@@ -27,43 +29,176 @@ Dashboard - Books review
         </table>        
         {% endif %}
     </div>
+
+    <!-- Modal for Adding New Book -->
+    <div id="add-book-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+        <div class="flex justify-center items-center w-full h-full">
+            <div class="bg-white p-6 rounded-md shadow-lg max-w-sm w-full">
+                <h2 class="text-xl font-bold mb-4">Request a new book</h2>
+                <form id="add-book-form">
+                    <div class="mb-4">
+                        <label for="title" class="block mb-2">Title</label>
+                        <input type="text" id="title" name="title" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="author" class="block mb-2">Author</label>
+                        <input type="text" id="author" name="author" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="genre" class="block mb-2">Genre</label>
+                        <input type="text" id="genre" name="genre" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div class="mb-4">
+                        <label for="description" class="block mb-2">Description</label>
+                        <textarea id="description" name="description" class="w-full p-2 border rounded"></textarea>
+                    </div>
+                    <div class="mb-4">
+                        <label for="publication-date" class="block mb-2">Publication Date</label>
+                        <input type="date" id="publication-date" name="publicationDate" class="w-full p-2 border rounded" required>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button type="button" id="cancel-btn" class="w-full bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-700">Cancel</button>
+                        <button type="submit" id="add-book-btn" class="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700">Add</button>
+                    </div>                    
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 {{ super() }}
 <script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", async function () {
-        try {
-            const response = await fetch("/books");
-            if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
+    document.addEventListener("DOMContentLoaded", () => {
+        const userRole = getUserRole();
 
-            const data = await response.json();
-            const booksTableBody = document.getElementById("books-table-body");
+        async function initEventListeners() {
+            const addBookBtn = document.getElementById('add-new-book-btn');
+            addBookBtn.addEventListener('click', openAddBookModal);
 
-            booksTableBody.innerHTML = "";
-            data.forEach(book => {
-                const row = document.createElement("tr");
-                row.classList.add("cursor-pointer", "hover:bg-gray-100");
-                row.innerHTML = `
-                    <td class="px-6 py-4 border-b text-center">${book.title}</td>
-                    <td class="px-6 py-4 border-b text-center">${book.author}</td>
-                    <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
-                `;
-                row.addEventListener("click", () => {
-                    window.location.href = `/books/${book.isbn}`;
-                });
-                booksTableBody.appendChild(row);
-            });
-        } catch (error) {
-            console.error("Error fetching books:", error);
-            const booksContainer = document.querySelector(".container");
-            booksContainer.innerHTML = `
-                <div class="bg-red-100 text-red-700 px-4 py-2 rounded-md">
-                    Error fetching books: ${error.message}.
-                </div>
-            `;
+            const cancelBtn = document.getElementById('cancel-btn');
+            cancelBtn.addEventListener('click', closeAddBookModal);
+
+            const addBookForm = document.getElementById('add-book-form');
+            addBookForm.addEventListener('submit', handleAddBook);
         }
+
+        async function fetchBooks() {
+            try {
+                const response = await fetch("/books");
+                const data = await response.json();
+                const booksTableBody = document.getElementById("books-table-body");
+                booksTableBody.innerHTML = "";
+                data.forEach(book => {
+                    const row = document.createElement("tr");
+                    row.classList.add("cursor-pointer", "hover:bg-gray-100");
+                    row.innerHTML = `
+                        <td class="px-6 py-4 border-b text-center">${book.title}</td>
+                        <td class="px-6 py-4 border-b text-center">${book.author}</td>
+                        <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
+                        <td class="px-6 py-4 border-b text-left w-16">
+                            <button
+                                class="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-700 hidden group-hover:block delete-book-btn"
+                                data-book-id="${book.bookId}"
+                            >
+                                Delete
+                            </button>
+                        </td>
+                    `;
+                    row.addEventListener("click", () => window.location.href = `/books/${book.isbn}`);
+                    row.querySelector(".delete-book-btn").addEventListener("click", (event) => {
+                        event.stopPropagation();
+                        deleteBook(book.isbn);
+                    });
+                    row.addEventListener("mouseover", function() {
+                        row.querySelector(".delete-book-btn").classList.remove("hidden");
+                    });
+                    row.addEventListener("mouseout", function() {
+                        row.querySelector(".delete-book-btn").classList.add("hidden");
+                    });
+                    booksTableBody.appendChild(row);
+                });
+            } catch (error) {
+                console.error("Error fetching books:", error);
+                displayErrorMessage("books-table-body", "Failed to fetch books.");
+            }
+        }
+
+        function openAddBookModal() {
+            const modal = document.getElementById("add-book-modal");
+            modal.classList.remove("hidden");
+        }
+
+        function closeAddBookModal() {
+            document.getElementById("add-book-form").reset();
+            const modal = document.getElementById("add-book-modal");
+            modal.classList.add("hidden");
+        }
+
+        async function handleAddBook(event) {
+            event.preventDefault();
+
+            const title = document.getElementById("title").value;
+            const author = document.getElementById("author").value;
+            const genre = document.getElementById("genre").value;
+            const description = document.getElementById("description").value;
+            const publicationDate = document.getElementById("publication-date").value;
+
+            const bookData = {
+                title,
+                author,
+                genre,
+                description,
+                publicationDate
+            };
+
+            try {
+                const response = await fetch("/books", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(bookData)
+                });
+
+                if (response.status === 403) {
+                    closeAddBookModal();
+                    displayErrorMessageWithWhiteBorderAndButtonModal(
+                        generatePermissionErrorMessage(userRole, "add", "book"),
+                        "close-btn",
+                        "Close",
+                        closeAddBookModal
+                    );
+                }
+
+                if (response.ok) {
+                    closeAddBookModal();
+                    displaySuccessMessageWithButtonModal(
+                        "Book added successfully!",
+                        "close-btn",
+                        "Ok",
+                        closeAddBookModal
+                    );
+                } else {
+                    console.error("Failed to add book");
+                }
+            } catch (error) {
+                console.error("Error adding book:", error);
+            }
+        }
+
+        async function deleteBook(isbn) {
+            try {
+                console.log(`Delete book with ISBN: ${isbn}`);
+            } catch (error) {
+                console.error("Error deleting book:", error);
+            }
+        }
+
+        initEventListeners();
+        fetchBooks();
+
     });
 </script>
 {% endblock %}

@@ -104,8 +104,78 @@
         `;
     }
 
+    function displayErrorMessageWithWhiteBorderAndButtonModal(errorMessage, buttonId, buttonText, closeAction) {
+        const modal = document.createElement('div');
+        modal.classList.add('fixed', 'inset-0', 'bg-black', 'bg-opacity-50', 'flex', 'justify-center', 'items-center', 'z-50');
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('bg-white', 'p-6', 'rounded-md', 'shadow-lg', 'max-w-sm', 'w-full');
+
+        const errorDiv = document.createElement('div');
+        errorDiv.classList.add('bg-red-100', 'text-red-700', 'px-4', 'py-2', 'rounded-md');
+        errorDiv.innerHTML = errorMessage;
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('flex', 'justify-center', 'mt-4');
+        
+        const button = document.createElement('button');
+        button.id = buttonId;
+        button.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'hover:bg-blue-700');
+        button.textContent = buttonText;
+
+        buttonContainer.appendChild(button);
+        modalContent.appendChild(errorDiv);
+        modalContent.appendChild(buttonContainer);
+        modal.appendChild(modalContent);
+
+        document.body.appendChild(modal);
+
+        button.addEventListener('click', () => {
+            closeAction(); 
+            document.body.removeChild(modal);
+        });
+    }
+
+    function displaySuccessMessageWithWhiteBorderAndButtonModal(successMessage, buttonId, buttonText, closeAction) {
+        const modal = document.createElement('div');
+        modal.classList.add('fixed', 'inset-0', 'bg-black', 'bg-opacity-50', 'flex', 'justify-center', 'items-center', 'z-50');
+
+        const modalContent = document.createElement('div');
+        modalContent.classList.add('bg-white', 'p-6', 'rounded-md', 'shadow-lg', 'max-w-sm', 'w-full');
+
+        const successDiv = document.createElement('div');
+        successDiv.classList.add('bg-green-100', 'text-green-700', 'px-4', 'py-2', 'rounded-md');
+        successDiv.innerHTML = successMessage;
+
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('flex', 'justify-center', 'mt-4');
+        
+        const button = document.createElement('button');
+        button.id = buttonId;
+        button.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'hover:bg-blue-700');
+        button.textContent = buttonText;
+
+        buttonContainer.appendChild(button);
+        modalContent.appendChild(successDiv);
+        modalContent.appendChild(buttonContainer);
+        modal.appendChild(modalContent);
+
+        document.body.appendChild(modal);
+
+        button.addEventListener('click', () => {
+            closeAction(); 
+            document.body.removeChild(modal);
+        });
+    }
+
+
+
     function generatePermissionErrorMessage(roleName, actionName, resourceName) {
         return `Your role <strong>${roleName}</strong> does not have permission to <strong>${actionName}</strong> the resource <strong>${resourceName}</strong>.`;
+    }
+
+    function getUserRole() {
+        return "{{ role }}";
     }
 </script>
 <script src="{{ url_for('static', filename='tailwind/tailwind.css') }}"></script>
