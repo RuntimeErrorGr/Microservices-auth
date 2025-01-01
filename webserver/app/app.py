@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-import requests
 from flask import Flask
 from .config import Config
 from .auth_routes import auth_bp

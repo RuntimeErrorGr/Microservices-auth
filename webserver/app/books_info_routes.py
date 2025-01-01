@@ -1,47 +1,20 @@
 import requests
 import logging
-from flask import Blueprint, jsonify, current_app, render_template, session
+from flask import Blueprint, jsonify, current_app, render_template, session, request
 from datetime import datetime
+from . import routes_utils as utils
 
 books_info_bp = Blueprint("books", __name__, url_prefix="/books")
-
-
-class NoPermissionError(Exception):
-    """Raised when the user does not have permission to access the requested resource."""
-
-
-def make_authenticated_request(url):
-    access_token = session.get("Authorization")
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/x-www-form-urlencoded",
-    }
-    try:
-        response = requests.get(url, timeout=5, headers=headers)
-        if response.status_code in [401, 403]:
-            logging.error(
-                f"Failed to fetch data: {response.status_code} {response.text}"
-            )
-            raise NoPermissionError
-
-        if not response.headers.get("Content-Type") == "application/json":
-            return response.text
-        logging.info(f"Response: {response.json()}")
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error connecting to books service: {e}")
-        return None
 
 
 @books_info_bp.route("", methods=["GET"])
 def index():
     try:
-        books_data = make_authenticated_request(
+        books_data = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books"
         )
-        logging.info(f"Fetched books data: {books_data}")
         return jsonify(books_data)
-    except NoPermissionError:
+    except utils.NoPermissionError:
         return (
             jsonify({"error": "You do not have permission to access this resource."}),
             403,
@@ -51,12 +24,88 @@ def index():
         return jsonify({"error": "Error fetching books data."}), 500
 
 
+@books_info_bp.route("", methods=["POST"])
+def add_pending_book():
+
+    data = {
+        "isbn": request.json.get("isbn"),
+        "title": request.json.get("title"),
+        "author": request.json.get("author"),
+        "publicationYear": request.json.get("publicationYear"),
+    }
+
+    try:
+        response = utils.make_authenticated_post_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/add", data
+        )
+        return jsonify(response)
+    except utils.NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to access this resource."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error adding book."}), 500
+
+
+@books_info_bp.route("/delete/<id>", methods=["DELETE"])
+def delete_book(id):
+    try:
+        response = utils.make_authenticated_delete_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/delete/{id}"
+        )
+        return jsonify(response)
+    except utils.NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to access this resource."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error deleting book."}), 500
+
+
+@books_info_bp.route("/approve/<id>", methods=["GET"])
+def approve_book(id):
+    try:
+        response = utils.make_authenticated_get_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/approve/{id}",
+        )
+        return jsonify(response)
+    except utils.NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to access this resource."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error approving book."}), 500
+
+
+@books_info_bp.route("/reject/<id>", methods=["GET"])
+def reject_book(id):
+    try:
+        response = utils.make_authenticated_get_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/reject/{id}",
+        )
+        return jsonify(response)
+    except utils.NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to access this resource."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error rejecting book."}), 500
+
+
 @books_info_bp.route("/<isbn>", methods=["GET"])
 def book_page(isbn):
     username = session.get("username")
     role = session.get("role")
     try:
-        title = make_authenticated_request(
+        title = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/title/{isbn}"
         )
         logging.info(f"Fetched title: {title}")
@@ -67,7 +116,7 @@ def book_page(isbn):
             username=username,
             role=role,
         )
-    except NoPermissionError:
+    except utils.NoPermissionError:
         logging.error(
             "User does not have permission to access the presentation page for %s", isbn
         )
@@ -83,12 +132,11 @@ def book_page(isbn):
 @books_info_bp.route("/<isbn>/details", methods=["GET"])
 def get_book_details(isbn):
     try:
-        book_data = make_authenticated_request(
+        book_data = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/{isbn}"
         )
-        logging.info(f"Fetched book data: {book_data}")
         return jsonify(book_data)
-    except NoPermissionError:
+    except utils.NoPermissionError:
         return (
             jsonify({"error": "You do not have permission to access this resource."}),
             403,
@@ -114,13 +162,12 @@ def get_book_reviews(isbn):
         return transformed_data
 
     try:
-        json_response = make_authenticated_request(
+        json_response = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/by-isbn/{isbn}"
         )
-        logging.info(f"Fetched reviews data: {json_response}")
         reviews_data = transform_reviews(json_response)
         return jsonify(reviews_data)
-    except NoPermissionError:
+    except utils.NoPermissionError:
         return (
             jsonify({"error": "You do not have permission to access this resource."}),
             403,
@@ -133,12 +180,11 @@ def get_book_reviews(isbn):
 @books_info_bp.route("/<isbn>/ratings", methods=["GET"])
 def get_book_ratings(isbn):
     try:
-        ratings_data = make_authenticated_request(
+        ratings_data = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/ratings/{isbn}"
         )
-        logging.info(f"Fetched ratings data: {ratings_data}")
         return jsonify(ratings_data)
-    except NoPermissionError:
+    except utils.NoPermissionError:
         return (
             jsonify({"error": "You do not have permission to access this resource."}),
             403,
