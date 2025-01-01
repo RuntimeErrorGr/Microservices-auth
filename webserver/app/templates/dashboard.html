@@ -109,7 +109,7 @@ Dashboard - Books review
                     row.addEventListener("click", () => window.location.href = `/books/${book.isbn}`);
                     row.querySelector(".delete-book-btn").addEventListener("click", (event) => {
                         event.stopPropagation();
-                        deleteBook(book.isbn);
+                        handleDeleteBook(book.bookId);
                     });
                     row.addEventListener("mouseover", function() {
                         row.querySelector(".delete-book-btn").classList.remove("hidden");
@@ -188,9 +188,33 @@ Dashboard - Books review
             }
         }
 
-        async function deleteBook(isbn) {
+        async function handleDeleteBook(bookId) {
             try {
-                console.log(`Delete book with ISBN: ${isbn}`);
+                console.log("Deleting book with ID:", bookId);
+                const response = await fetch(`/books/${bookId}`, {
+                    method: "DELETE",
+                });
+
+                if (response.status === 403) {
+                    displayErrorMessageWithWhiteBorderAndButtonModal(
+                        generatePermissionErrorMessage(userRole, "delete", "book"),
+                        "close-btn",
+                        "Close",
+                        closeAddBookModal
+                    );
+                }
+
+                if (response.ok) {
+                    displaySuccessMessageWithButtonModal(
+                        "Book deleted successfully!",
+                        "close-btn",
+                        "Ok",
+                        closeAddBookModal
+                    );
+                    fetchBooks();
+                } else {
+                    console.error("Error deleting book:", error);
+                }
             } catch (error) {
                 console.error("Error deleting book:", error);
             }
