@@ -38,8 +38,8 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
-                    Profile
+                <a href="{{ url_for('requests.dashboard') }}" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                    Requests
                 </a>
             </li>
             <li>
@@ -104,8 +104,14 @@
         `;
     }
 
-    function displayErrorMessageWithWhiteBorderAndButtonModal(errorMessage, buttonId, buttonText, closeAction) {
+    function displayErrorMessageWithWhiteBorderAndButtonModal(
+        errorMessage, 
+        buttonId, 
+        buttonText, 
+        closeAction = () => document.body.removeChild(document.getElementById("error-modal"))
+)   {
         const modal = document.createElement('div');
+        modal.id = 'error-modal';
         modal.classList.add('fixed', 'inset-0', 'bg-black', 'bg-opacity-50', 'flex', 'justify-center', 'items-center', 'z-50');
 
         const modalContent = document.createElement('div');
@@ -136,8 +142,20 @@
         });
     }
 
-    function displaySuccessMessageWithWhiteBorderAndButtonModal(successMessage, buttonId, buttonText, closeAction) {
+    function displaySuccessMessageWithWhiteBorderAndButtonModal(
+        successMessage, 
+        buttonId, 
+        buttonText, 
+        closeAction = () => {
+            const modal = document.getElementById("success-modal");
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+            window.location.reload();
+        }
+    ) {
         const modal = document.createElement('div');
+        modal.id = 'success-modal';
         modal.classList.add('fixed', 'inset-0', 'bg-black', 'bg-opacity-50', 'flex', 'justify-center', 'items-center', 'z-50');
 
         const modalContent = document.createElement('div');

@@ -1,0 +1,213 @@
+{% extends "base_layout.html" %}
+
+{% block title %}
+Requests Page
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto mt-8">
+    <h1 class="text-2xl text-center mt-4">Here you can approve or reject requests</h1>
+
+    <!-- Books Section -->
+    <h3 class="text-xl font-semibold mb-4">Pending books</h3>
+    <div class="mb-12" id="books-section">
+        <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+            <thead>
+                <tr>
+                    <th class="px-6 py-4 border-b text-center">Title</th>
+                    <th class="px-6 py-4 border-b text-center">Author</th>
+                    <th class="px-6 py-4 border-b text-center">ISBN</th>
+                    <th class="px-6 py-4 border-b text-center">Description</th>
+                    <th class="px-6 py-4 border-b text-center">Genre</th>
+                    <th class="px-6 py-4 border-b text-center">Publication Date</th>
+                </tr>
+            </thead>
+            <tbody id="books-details">
+                <tr>
+                    <td colspan="7" class="text-center py-4">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Reviews Section -->
+    <h3 class="text-xl font-semibold mb-4">Pending reviews</h3>
+    <div class="mb-12" id="reviews-section">
+        <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+            <thead>
+                <tr>
+                    <th class="px-6 py-4 border-b text-center">Reviewer</th>
+                    <th class="px-6 py-4 border-b text-center">Book</th>
+                    <th class="px-6 py-4 border-b text-center">Review</th>
+                    <th class="px-6 py-4 border-b text-center">Reviewed At</th>
+                </tr>
+            </thead>
+            <tbody id="review-details">
+                <tr>
+                    <td colspan="5" class="text-center py-4">Loading...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", async function () {
+        const userRole = "{{ role }}";
+
+        async function fetchAndRenderPendingBooks() {
+            try {
+                const response = await fetch('/requests/books/pending');
+                const booksTableBody = document.getElementById("books-details");
+                if (response.ok) {
+                    const books = await response.json();
+                    booksTableBody.innerHTML = "";
+                    if (books.length === 0) {
+                        booksTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4">No book requests at the moment.</td></tr>`;
+                    } else {
+                        books.forEach(book => {
+                            const row = document.createElement("tr");
+                            row.classList.add("cursor-pointer", "hover:bg-gray-100", "group");
+                            row.innerHTML = `
+                                <td class="px-6 py-4 border-b text-center">${book.title}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.author}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.isbn}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.description}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.genre}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
+                                <td class="px-6 py-4 border-b text-center">
+                                    <div class="flex space-x-2 hidden group-hover:flex">
+                                        <button
+                                            class="bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 accept-btn"
+                                            data-book-id="${book.bookId}"
+                                        >
+                                            Accept
+                                        </button>
+                                        <button
+                                            class="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-700 reject-btn"
+                                            data-book-id="${book.bookId}"
+                                        >
+                                            Reject
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            row.addEventListener("click", () => window.location.href = `/books/${book.isbn}`);
+                            row.querySelector(".accept-btn").addEventListener("click", (event) => {
+                                event.stopPropagation();
+                                handleRequestAction("books", "approve", book.bookId);
+                            });
+                            row.querySelector(".reject-btn").addEventListener("click", (event) => {
+                                event.stopPropagation();
+                                handleRequestAction("books", "reject", book.bookId);
+                            });
+                            booksTableBody.appendChild(row);
+                        });
+                    }
+                } else if (response.status === 403) {
+                    displayErrorMessageWithWhiteBorder(
+                        "books-section",
+                        generatePermissionErrorMessage(userRole, "view", "pending books")
+                    );
+                } else {
+                    throw new Error("Failed to fetch pending books.");
+                }
+            } catch (error) {
+                console.error("Error fetching pending books:", error);
+                displayErrorMessage("books-section", error.message);
+            }
+        }
+
+        async function fetchAndRenderPendingReviews() {
+            try {
+                const response = await fetch('/requests/reviews/pending');
+                const reviewsTableBody = document.getElementById("review-details");
+                if (response.ok) {
+                    const reviews = await response.json();
+                    reviewsTableBody.innerHTML = "";
+                    if (reviews.length === 0) {
+                        reviewsTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No reviews to process at the moment.</td></tr>`;
+                    } else {
+                        reviews.forEach(review => {
+                            const row = document.createElement("tr");
+                            row.classList.add("cursor-pointer", "hover:bg-gray-100", "group");
+                            row.innerHTML = `
+                                <td class="px-6 py-4 border-b text-center">${review.reviewer}</td>
+                                <td class="px-6 py-4 border-b text-center">${review.book}</td>
+                                <td class="px-6 py-4 border-b text-center">${review.review}</td>
+                                <td class="px-6 py-4 border-b text-center">${review.reviewedAt}</td>
+                                <td class="px-6 py-4 border-b text-center">
+                                    <div class="flex space-x-2 hidden group-hover:flex">
+                                        <button
+                                            class="bg-green-500 text-white px-2 py-1 rounded-md hover:bg-green-600 accept-btn"
+                                            data-review-id="${review.reviewId}"
+                                        >
+                                            Accept
+                                        </button>
+                                        <button
+                                            class="bg-red-500 text-white px-2 py-1 rounded-md hover:bg-red-700 reject-btn"
+                                            data-review-id="${review.reviewId}"
+                                        >
+                                            Reject
+                                        </button>
+                                    </div>
+                                </td>
+                            `;
+                            row.querySelector(".accept-btn").addEventListener("click", (event) => {
+                                event.stopPropagation();
+                                handleRequestAction("reviews", "approve", review.reviewId);
+                            });
+                            row.querySelector(".reject-btn").addEventListener("click", (event) => {
+                                event.stopPropagation();
+                                handleRequestAction("reviews", "reject", review.reviewId);
+                            });
+                            reviewsTableBody.appendChild(row);
+                        });
+                    }
+                } else if (response.status === 403) {
+                    displayErrorMessageWithWhiteBorder(
+                        "reviews-section",
+                        generatePermissionErrorMessage(userRole, "view", "pending reviews")
+                    );
+                } else {
+                    throw new Error("Failed to fetch pending reviews.");
+                }
+            } catch (error) {
+                console.error("Error fetching pending reviews:", error);
+                displayErrorMessage("reviews-section", error.message);
+            }
+        }
+
+        function handleRequestAction(type, action, id) {
+            const endpoint = `/requests/${type}/${action}/${id}`;
+            
+            fetch(endpoint, { method: 'GET' })
+                .then(response => {
+                    if (response.ok) {
+                        displaySuccessMessageWithWhiteBorderAndButtonModal(
+                            `The ${type} has been ${action}ed.`,
+                            "button-modal",
+                            "Ok",
+                        );
+                    } else {
+                        throw new Error("Failed to process the request.");
+                    }
+                })
+                .catch(error => {
+                    console.error("Error processing the request:", error);
+                    displayErrorMessageWithWhiteBorderAndButtonModal(
+                        generatePermissionErrorMessage(userRole, action, type),
+                        "button-modal",
+                        "Close",
+                    );
+                });
+        }
+
+        fetchAndRenderPendingBooks();
+        fetchAndRenderPendingReviews();
+    });
+</script>
+{% endblock %}

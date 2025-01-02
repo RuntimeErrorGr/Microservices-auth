@@ -5,6 +5,7 @@ from flask import Flask
 from .config import Config
 from .auth_routes import auth_bp
 from .books_info_routes import books_info_bp
+from .requests_routes import requests_bp
 
 __all__ = ["create_app"]
 
@@ -35,6 +36,7 @@ def configure_app(app: Flask):
 def configure_blueprints(app: Flask):
     app.register_blueprint(auth_bp)
     app.register_blueprint(books_info_bp)
+    app.register_blueprint(requests_bp)
 
 
 def configure_logging():

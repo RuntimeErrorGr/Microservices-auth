@@ -31,7 +31,12 @@ spec:
                 "/books/*",
                 "/dashboard",
                 "/login",
+                "/requests",
+                "/requests/*",
               ]
         - operation:
             methods: ["POST"]
-            paths: ["/login", "/logout"]
+            paths: ["/books", "/login", "/logout"]
+        - operation:
+            methods: ["DELETE"]
+            paths: ["/books/*"]

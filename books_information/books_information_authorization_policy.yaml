@@ -23,7 +23,7 @@ spec:
     - to:
         - operation:
             methods: ["GET"]
-            paths: ["/books", "/books/title/*", "/books/ratings/*"]
+            paths: ["/books/approved", "/books/title/*", "/books/ratings/*"]
     - to:
         - operation:
             methods: ["GET"]
@@ -40,3 +40,40 @@ spec:
           values: ["user"]
         - key: request.auth.claims[resource_access][Istio][roles]
           values: ["verified"]
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths:
+              [
+                "/books/pending",
+                "/books/approve/*",
+                "/books/reject/*",
+                "/reviews/pending",
+                "/reviews/approve/*",
+                "/reviews/reject/*",
+              ]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["user"]
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["verified"]
+    - to:
+        - operation:
+            methods: ["POST"]
+            paths: ["/books/add", "/reviews/add"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["user"]
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["verified"]
+    - to:
+        - operation:
+            methods: ["DELETE"]
+            paths: ["/books/delete/*", "/reviews/delete/*"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["user"]
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["verified"]
+          # - key: request.auth.claims[resource_access][Istio][roles]
+          #   values: ["curator", "moderator", "admin"]

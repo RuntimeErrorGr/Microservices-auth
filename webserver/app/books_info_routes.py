@@ -7,11 +7,18 @@ from . import routes_utils as utils
 books_info_bp = Blueprint("books", __name__, url_prefix="/books")
 
 
-@books_info_bp.route("", methods=["GET"])
-def index():
+@books_info_bp.route("", methods=["GET", "POST"])
+def handle_books():
+    if request.method == "GET":
+        return get_books()
+    elif request.method == "POST":
+        return add_book()
+
+
+def get_books():
     try:
         books_data = utils.make_authenticated_get_request(
-            f"{current_app.config['BOOKS_SERVICE_URL']}/books"
+            f"{current_app.config['BOOKS_SERVICE_URL']}/books/approved"
         )
         return jsonify(books_data)
     except utils.NoPermissionError:
@@ -24,16 +31,8 @@ def index():
         return jsonify({"error": "Error fetching books data."}), 500
 
 
-@books_info_bp.route("", methods=["POST"])
-def add_pending_book():
-
-    data = {
-        "isbn": request.json.get("isbn"),
-        "title": request.json.get("title"),
-        "author": request.json.get("author"),
-        "publicationYear": request.json.get("publicationYear"),
-    }
-
+def add_book():
+    data = extract_book_data()
     try:
         response = utils.make_authenticated_post_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/add", data
@@ -41,12 +40,21 @@ def add_pending_book():
         return jsonify(response)
     except utils.NoPermissionError:
         return (
-            jsonify({"error": "You do not have permission to access this resource."}),
+            jsonify({"error": "You do not have permission to perform this action."}),
             403,
         )
     except requests.exceptions.RequestException as e:
         logging.error(f"Error connecting to books service: {e}")
         return jsonify({"error": "Error adding book."}), 500
+
+
+def extract_book_data():
+    return {
+        "isbn": request.json.get("isbn"),
+        "title": request.json.get("title"),
+        "author": request.json.get("author"),
+        "publicationYear": request.json.get("publicationYear"),
+    }
 
 
 @books_info_bp.route("/delete/<id>", methods=["DELETE"])
@@ -66,48 +74,16 @@ def delete_book(id):
         return jsonify({"error": "Error deleting book."}), 500
 
 
-@books_info_bp.route("/approve/<id>", methods=["GET"])
-def approve_book(id):
-    try:
-        response = utils.make_authenticated_get_request(
-            f"{current_app.config['BOOKS_SERVICE_URL']}/books/approve/{id}",
-        )
-        return jsonify(response)
-    except utils.NoPermissionError:
-        return (
-            jsonify({"error": "You do not have permission to access this resource."}),
-            403,
-        )
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error connecting to books service: {e}")
-        return jsonify({"error": "Error approving book."}), 500
-
-
-@books_info_bp.route("/reject/<id>", methods=["GET"])
-def reject_book(id):
-    try:
-        response = utils.make_authenticated_get_request(
-            f"{current_app.config['BOOKS_SERVICE_URL']}/books/reject/{id}",
-        )
-        return jsonify(response)
-    except utils.NoPermissionError:
-        return (
-            jsonify({"error": "You do not have permission to access this resource."}),
-            403,
-        )
-    except requests.exceptions.RequestException as e:
-        logging.error(f"Error connecting to books service: {e}")
-        return jsonify({"error": "Error rejecting book."}), 500
-
-
 @books_info_bp.route("/<isbn>", methods=["GET"])
 def book_page(isbn):
     username = session.get("username")
     role = session.get("role")
     try:
-        title = utils.make_authenticated_get_request(
+        response = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/title/{isbn}"
         )
+        book_id = list(response.keys())[0]
+        title = response[book_id]
         logging.info(f"Fetched title: {title}")
         return render_template(
             "book_page.html",
@@ -115,6 +91,7 @@ def book_page(isbn):
             isbn=isbn,
             username=username,
             role=role,
+            id=book_id,
         )
     except utils.NoPermissionError:
         logging.error(
@@ -126,6 +103,7 @@ def book_page(isbn):
             isbn=isbn,
             username=username,
             role=role,
+            id=None,
         )
 
 

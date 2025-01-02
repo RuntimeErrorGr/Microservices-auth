@@ -9,7 +9,14 @@ CREATE TABLE public.books (
     genre character varying(100),
     publication_date date,
     isbn character varying(20),
-    description text
+    status smallint DEFAULT 0,
+    description text,
+    CONSTRAINT status_check CHECK (
+        (
+            (status >= 0)
+            AND (status <= 2)
+        )
+    )
 );
 
 ALTER TABLE public.books OWNER TO postgres;
@@ -74,8 +81,15 @@ CREATE TABLE public.reviews (
     review_id integer NOT NULL,
     book_id integer NOT NULL,
     user_id integer NOT NULL,
+    status smallint DEFAULT 0,
     review_text text,
-    review_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP
+    review_date timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT reviews_status_check CHECK (
+        (
+            (status >= 0)
+            AND (status <= 2)
+        )
+    )
 );
 
 ALTER TABLE public.reviews OWNER TO postgres;
@@ -161,12 +175,13 @@ COPY public.books (
     genre,
     publication_date,
     isbn,
-    description
+    description,
+    status
 )
 FROM stdin;
 
-1	The Great Gatsby	F. Scott Fitzgerald	Fiction	1925-04-10	9780743273565	A novel set in the Jazz Age.
-2	To Kill a Mockingbird	Harper Lee	Fiction	1960-07-11	9780060935467	A tale of racial injustice and childhood innocence.
+1	The Great Gatsby	F. Scott Fitzgerald	Fiction	1925-04-10	9780743273565	A novel set in the Jazz Age.	1
+2	To Kill a Mockingbird	Harper Lee	Fiction	1960-07-11	9780060935467	A tale of racial injustice and childhood innocence.	1
 \.
 
 --
@@ -195,12 +210,13 @@ COPY public.reviews (
     book_id,
     user_id,
     review_text,
-    review_date
+    review_date,
+    status
 )
 FROM stdin;
 
-1	1	1	An amazing read with deep symbolism.	2024-11-17 14:45:11.574058
-2	2	2	A must-read for everyone.	2024-11-17 14:45:11.574058
+1	1	1	An amazing read with deep symbolism.	2024-11-17 14:45:11.574058	1
+2	2	2	A must-read for everyone.	2024-11-17 14:45:11.574058	1
 \.
 
 --
@@ -217,6 +233,7 @@ FROM stdin;
 
 1	book-lover	book-lover@example.com	2024-11-17 14:45:11.568427
 2	avid-reader	avid-reader@example.com	2024-11-17 14:45:11.568427
+3   book-user	book-user@example.com	2025-01-01 14:45:11.000000 
 \.
 
 --
@@ -331,7 +348,7 @@ ADD COLUMN keycloak_id character varying(36) NOT NULL;
 --
 UPDATE public.users
 SET
-    keycloak_id = '40949a41-7432-40db-bb25-90dd7c55f2e8'
+    keycloak_id = '59d5303e-997c-4995-a5a5-a456968700d9'
 WHERE
     username = 'book-lover';
 
@@ -362,10 +379,10 @@ COPY public.users (
 )
 FROM stdin;
 
-1	book-lover	book-lover@example.com	2024-11-17 14:45:11.568427	40949a41-7432-40db-bb25-90dd7c55f2e8
+1	book-lover	book-lover@example.com	2024-11-17 14:45:11.568427	59d5303e-997c-4995-a5a5-a456968700d9
 2	avid-reader	avid-reader@example.com	2024-11-17 14:45:11.568427	dummy-keycloak-id-0000-0000-000000000000
+3	book-user	book-user@example.com	2025-01-01 14:45:11.000000	40949a41-7432-40db-bb25-90dd7c55f2e8
 \.
 
---
 -- PostgreSQL database dump complete
 --

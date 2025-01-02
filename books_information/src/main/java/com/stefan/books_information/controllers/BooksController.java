@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("books")
@@ -24,6 +26,21 @@ public class BooksController {
     @GetMapping
     public List<Book> getAllBooks() {
         return booksService.findAllBooks();
+    }
+
+    @GetMapping("pending")
+    public List<Book> getPendingBooks() {
+        return booksService.findPendingBooks();
+    }
+
+    @GetMapping("approved")
+    public List<Book> getApprovedBooks() {
+        return booksService.findApprovedBooks();
+    }
+
+    @GetMapping("rejected")
+    public List<Book> getRejectedBooks() {
+        return booksService.findRejectedBooks();
     }
 
     @GetMapping("{isbn}")
@@ -37,7 +54,7 @@ public class BooksController {
     }
 
     @GetMapping("/title/{isbn}")
-    public String getBookTitleByIsbn(@PathVariable String isbn) {
+    public Map<String, String> getBookTitleByIsbn(@PathVariable String isbn) {
         return booksService.findTitleByIsbn(isbn);
     }
 
@@ -49,6 +66,16 @@ public class BooksController {
     @PutMapping("update/{id}")
     public Book updateBook(@PathVariable Long id, @RequestBody Book updatedBook) {
         return booksService.updateBook(id, updatedBook);
+    }
+
+    @GetMapping("approve/{id}")
+    public Book approveBook(@PathVariable Long id) {
+        return booksService.approveBook(id);
+    }
+
+    @GetMapping("reject/{id}")
+    public Book rejectBook(@PathVariable Long id) {
+        return booksService.rejectBook(id);
     }
 
     @DeleteMapping("delete/{id}")

@@ -21,9 +21,44 @@ import java.util.List;
 public class ReviewsController {
     private final ReviewsService reviewsService;
 
+    @GetMapping
+    public List<Review> getAllReviews(){
+        return reviewsService.findAllReviews();
+    }
+
+    @GetMapping("pending")
+    public List<Review> getPendingReviews(){
+        return reviewsService.findPendingReviews();
+    }
+
+    @GetMapping("approved")
+    public List<Review> getApprovedReviews(){
+        return reviewsService.findApprovedReviews();
+    }
+
+    @GetMapping("rejected")
+    public List<Review> getRejectedReviews(){
+        return reviewsService.findRejectedReviews();
+    }
+
     @GetMapping("by-isbn/{isbn}")
     public List<Review> getReviewsByBookIsbn(@PathVariable String isbn){
         return reviewsService.findReviewsByBookIsbn(isbn);
+    }
+
+    @GetMapping("by-isbn/pending/{isbn}")
+    public List<Review> getPendingReviewsByBookIsbn(@PathVariable String isbn){
+        return reviewsService.findPendingReviewsByBookIsbn(isbn);
+    }
+
+    @GetMapping("by-isbn/approved/{isbn}")
+    public List<Review> getApprovedReviewsByBookIsbn(@PathVariable String isbn){
+        return reviewsService.findApprovedReviewsByBookIsbn(isbn);
+    }
+
+    @GetMapping("by-isbn/rejected/{isbn}")
+    public List<Review> getRejectedReviewsByBookIsbn(@PathVariable String isbn){
+        return reviewsService.findRejectedReviewsByBookIsbn(isbn);
     }
 
     @PostMapping("add")

@@ -2,6 +2,7 @@ package com.stefan.books_information.services;
 
 import com.stefan.books_information.dtos.AddReviewPayloadDTO;
 import com.stefan.books_information.models.Review;
+import com.stefan.books_information.models.Status;
 import com.stefan.books_information.repositories.BooksRepository;
 import com.stefan.books_information.repositories.ReviewsRepository;
 import com.stefan.books_information.repositories.UserRepository;
@@ -22,6 +23,34 @@ public class ReviewsService {
 
     public List<Review> findReviewsByBookIsbn(String bookIsbn){
         return reviewsRepository.findReviewsByBook_Isbn(bookIsbn);
+    }
+
+    public List<Review> findAllReviews(){
+        return reviewsRepository.findAll();
+    }
+
+    public List<Review> findPendingReviews(){
+        return reviewsRepository.findByStatus(Status.PENDING);
+    }
+
+    public List<Review> findApprovedReviews(){
+        return reviewsRepository.findByStatus(Status.APPROVED);
+    }
+
+    public List<Review> findRejectedReviews(){
+        return reviewsRepository.findByStatus(Status.REJECTED);
+    }
+
+    public List<Review> findPendingReviewsByBookIsbn(String bookIsbn){
+        return reviewsRepository.findPendingReviewsByBook_Isbn(bookIsbn);
+    }
+
+    public List<Review> findApprovedReviewsByBookIsbn(String bookIsbn){
+        return reviewsRepository.findApprovedReviewsByBook_Isbn(bookIsbn);
+    }
+    
+    public List<Review> findRejectedReviewsByBookIsbn(String bookIsbn){
+        return reviewsRepository.findRejectedReviewsByBook_Isbn(bookIsbn);
     }
 
     public Review addReview(AddReviewPayloadDTO addReviewPayloadDTO){
