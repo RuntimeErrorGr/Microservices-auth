@@ -52,6 +52,7 @@ def login():
             session["username"] = username
             admin_token = utils.get_admin_token()
             user_id = utils.get_user_id(admin_token, username)
+            session["keycloak_user_id"] = user_id
             client_id = utils.get_client_id(admin_token)
             session["role"] = "-".join(
                 utils.get_user_roles(admin_token, user_id, client_id)
