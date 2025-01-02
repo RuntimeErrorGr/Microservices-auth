@@ -53,7 +53,17 @@ def extract_book_data():
         "isbn": request.json.get("isbn"),
         "title": request.json.get("title"),
         "author": request.json.get("author"),
-        "publicationYear": request.json.get("publicationYear"),
+        "genre": request.json.get("genre"),
+        "description": request.json.get("description"),
+        "publicationDate": request.json.get("publicationDate"),
+    }
+
+
+def extract_review_data(isbn):
+    return {
+        "reviewText": request.json.get("text"),
+        "bookIsbn": isbn,
+        "keycloakId": session.get("keycloak_user_id"),
     }
 
 
@@ -107,7 +117,7 @@ def book_page(isbn):
         )
 
 
-@books_info_bp.route("/<isbn>/details", methods=["GET"])
+@books_info_bp.route("/details/<isbn>", methods=["GET"])
 def get_book_details(isbn):
     try:
         book_data = utils.make_authenticated_get_request(
@@ -124,7 +134,14 @@ def get_book_details(isbn):
         return jsonify({"error": "Error fetching book data."}), 500
 
 
-@books_info_bp.route("/<isbn>/reviews", methods=["GET"])
+@books_info_bp.route("/reviews/<isbn>", methods=["GET", "POST"])
+def book_reviews(isbn):
+    if request.method == "GET":
+        return get_book_reviews(isbn)
+    elif request.method == "POST":
+        return add_review(isbn)
+
+
 def get_book_reviews(isbn):
     def transform_reviews(input_data):
         transformed_data = [
@@ -155,7 +172,25 @@ def get_book_reviews(isbn):
         return jsonify({"error": "Error fetching reviews data."}), 500
 
 
-@books_info_bp.route("/<isbn>/ratings", methods=["GET"])
+def add_review(isbn):
+    data = extract_review_data(isbn)
+    logging.info(f"Adding review: {data}")
+    try:
+        response = utils.make_authenticated_post_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/add", data
+        )
+        return jsonify(response)
+    except utils.NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to perform this action."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error adding review."}), 500
+
+
+@books_info_bp.route("/ratings/<isbn>", methods=["GET"])
 def get_book_ratings(isbn):
     try:
         ratings_data = utils.make_authenticated_get_request(

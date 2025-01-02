@@ -14,5 +14,6 @@ public class User {
     private Long userId;
     private String username;
     private String email;
+    private String keycloakId;
     private java.sql.Timestamp registeredAt;
 }

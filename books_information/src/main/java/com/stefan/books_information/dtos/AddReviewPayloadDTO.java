@@ -7,6 +7,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class AddReviewPayloadDTO {
     private String bookIsbn;
-    private Long userId;
+    private String keycloakId;
     private String reviewText;
 }

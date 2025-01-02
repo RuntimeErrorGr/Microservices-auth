@@ -6,6 +6,7 @@ import com.stefan.books_information.models.Status;
 import com.stefan.books_information.repositories.BooksRepository;
 import com.stefan.books_information.repositories.ReviewsRepository;
 import com.stefan.books_information.repositories.UserRepository;
+import com.stefan.books_information.exceptions.UserNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -56,10 +57,10 @@ public class ReviewsService {
     public Review addReview(AddReviewPayloadDTO addReviewPayloadDTO){
         Review review = new Review();
         review.setBook(booksRepository.findByIsbn(addReviewPayloadDTO.getBookIsbn()));
-        review.setUser(userRepository.findById(addReviewPayloadDTO.getUserId()).orElseThrow());
+        review.setUser(userRepository.findByKeycloakId(addReviewPayloadDTO.getKeycloakId()).orElseThrow(() -> new UserNotFoundException(addReviewPayloadDTO.getKeycloakId())));
         review.setReviewText(addReviewPayloadDTO.getReviewText());
         review.setReviewDate(LocalDateTime.now());
-
+        review.setStatus(Status.PENDING);
         reviewsRepository.save(review);
         return review;
     }

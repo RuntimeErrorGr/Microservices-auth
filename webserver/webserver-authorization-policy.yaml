@@ -36,7 +36,7 @@ spec:
               ]
         - operation:
             methods: ["POST"]
-            paths: ["/books", "/login", "/logout"]
+            paths: ["/books", "/books/reviews/*", "/login", "/logout"]
         - operation:
             methods: ["DELETE"]
             paths: ["/books/*"]

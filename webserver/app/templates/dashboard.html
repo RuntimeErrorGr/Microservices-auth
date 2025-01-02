@@ -16,7 +16,7 @@ Dashboard - Books review
                 {{ error }}
             </div>
         {% else %}
-        <table class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
+        <table id="books-table" class="min-w-full bg-white border border-gray-200 shadow-md rounded-lg">
             <thead>
                 <tr>
                     <th class="px-6 py-3 border-b text-center">Title</th>
@@ -140,7 +140,7 @@ Dashboard - Books review
                 });
             } catch (error) {
                 console.error("Error fetching books:", error);
-                displayErrorMessage("books-table-body", "Failed to fetch books.");
+                displayErrorMessageWithWhiteBorder("books-table", "Failed to fetch books")
             }
         }
 
