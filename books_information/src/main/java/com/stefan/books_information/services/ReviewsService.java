@@ -65,6 +65,20 @@ public class ReviewsService {
         return review;
     }
 
+    public Review approveReview(Long id){
+        Review reviewToBeApproved = reviewsRepository.findById(id).orElseThrow();
+        reviewToBeApproved.setStatus(Status.APPROVED);
+        reviewsRepository.save(reviewToBeApproved);
+        return reviewToBeApproved;
+    }
+
+    public Review rejectReview(Long id){
+        Review reviewToBeRejected = reviewsRepository.findById(id).orElseThrow();
+        reviewToBeRejected.setStatus(Status.REJECTED);
+        reviewsRepository.save(reviewToBeRejected);
+        return reviewToBeRejected;
+    }
+
     public String deleteReview(Long id) {
         Review reviewToBeDeleted = reviewsRepository.findById(id).orElseThrow();
 

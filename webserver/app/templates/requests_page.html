@@ -135,10 +135,10 @@ Requests Page
                             const row = document.createElement("tr");
                             row.classList.add("cursor-pointer", "hover:bg-gray-100", "group");
                             row.innerHTML = `
-                                <td class="px-6 py-4 border-b text-center">${review.reviewer}</td>
-                                <td class="px-6 py-4 border-b text-center">${review.book}</td>
-                                <td class="px-6 py-4 border-b text-center">${review.review}</td>
-                                <td class="px-6 py-4 border-b text-center">${review.reviewedAt}</td>
+                                <td class="px-6 py-4 border-b text-center">${review.user.username}</td>
+                                <td class="px-6 py-4 border-b text-center">${review.book.title}</td>
+                                <td class="px-6 py-4 border-b text-center">${review.reviewText}</td>
+                                <td class="px-6 py-4 border-b text-center">${new Date(review.reviewDate).toISOString().replace('T', ' ').substring(0, 19)}</td>
                                 <td class="px-6 py-4 border-b text-center">
                                     <div class="flex space-x-2 hidden group-hover:flex">
                                         <button

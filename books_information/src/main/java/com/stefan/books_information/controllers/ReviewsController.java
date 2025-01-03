@@ -61,6 +61,16 @@ public class ReviewsController {
         return reviewsService.findRejectedReviewsByBookIsbn(isbn);
     }
 
+    @GetMapping("/approve/{id}")
+    public Review approveReview(@PathVariable Long id){
+        return reviewsService.approveReview(id);
+    }
+
+    @GetMapping("/reject/{id}")
+    public Review rejectReview(@PathVariable Long id){
+        return reviewsService.rejectReview(id);
+    }
+
     @PostMapping("add")
     public Review addReview(@RequestBody AddReviewPayloadDTO addReviewPayloadDTO){
         return reviewsService.addReview(addReviewPayloadDTO);
