@@ -84,6 +84,23 @@ def delete_book(id):
         return jsonify({"error": "Error deleting book."}), 500
 
 
+@books_info_bp.route("/reviews/delete/<id>", methods=["DELETE"])
+def delete_review(id):
+    try:
+        response = utils.make_authenticated_delete_request(
+            f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/delete/{id}"
+        )
+        return jsonify(response)
+    except utils.NoPermissionError:
+        return (
+            jsonify({"error": "You do not have permission to access this resource."}),
+            403,
+        )
+    except requests.exceptions.RequestException as e:
+        logging.error(f"Error connecting to books service: {e}")
+        return jsonify({"error": "Error deleting review."}), 500
+
+
 @books_info_bp.route("/<isbn>", methods=["GET"])
 def book_page(isbn):
     username = session.get("username")
@@ -146,6 +163,7 @@ def get_book_reviews(isbn):
     def transform_reviews(input_data):
         transformed_data = [
             {
+                "reviewId": review["reviewId"],
                 "reviewer": review["user"]["username"],
                 "text": review["reviewText"],
                 "date": datetime.fromisoformat(review["reviewDate"]).strftime(
