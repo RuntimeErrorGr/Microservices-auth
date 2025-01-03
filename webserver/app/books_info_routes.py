@@ -158,7 +158,7 @@ def get_book_reviews(isbn):
 
     try:
         json_response = utils.make_authenticated_get_request(
-            f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/by-isbn/{isbn}"
+            f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/by-isbn/approved/{isbn}"
         )
         reviews_data = transform_reviews(json_response)
         return jsonify(reviews_data)
