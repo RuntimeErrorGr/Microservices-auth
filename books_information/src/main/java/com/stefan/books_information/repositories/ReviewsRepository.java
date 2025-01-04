@@ -11,7 +11,4 @@ import java.util.List;
 public interface ReviewsRepository extends JpaRepository<Review, Long> {
     List<Review> findReviewsByBook_Isbn(String bookIsbn);
     List<Review> findByStatus(Status status);
-    List<Review> findPendingReviewsByBook_Isbn(String bookIsbn);
-    List<Review> findApprovedReviewsByBook_Isbn(String bookIsbn);
-    List<Review> findRejectedReviewsByBook_Isbn(String bookIsbn);
 }

@@ -43,15 +43,15 @@ public class ReviewsService {
     }
 
     public List<Review> findPendingReviewsByBookIsbn(String bookIsbn){
-        return reviewsRepository.findPendingReviewsByBook_Isbn(bookIsbn);
+        return reviewsRepository.findByStatus(Status.PENDING).stream().filter(review -> review.getBook().getIsbn().equals(bookIsbn)).toList();
     }
 
     public List<Review> findApprovedReviewsByBookIsbn(String bookIsbn){
-        return reviewsRepository.findApprovedReviewsByBook_Isbn(bookIsbn);
+        return reviewsRepository.findByStatus(Status.APPROVED).stream().filter(review -> review.getBook().getIsbn().equals(bookIsbn)).toList();
     }
     
     public List<Review> findRejectedReviewsByBookIsbn(String bookIsbn){
-        return reviewsRepository.findRejectedReviewsByBook_Isbn(bookIsbn);
+        return reviewsRepository.findByStatus(Status.REJECTED).stream().filter(review -> review.getBook().getIsbn().equals(bookIsbn)).toList();
     }
 
     public Review addReview(AddReviewPayloadDTO addReviewPayloadDTO){
