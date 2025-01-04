@@ -118,4 +118,3 @@ Response should be:
 
 1. Go through the prerequisites setup.
 2. Just _kubeclt apply -f_ all .yaml files you find (would be nice to have a script for this).
-3. Have fun.
