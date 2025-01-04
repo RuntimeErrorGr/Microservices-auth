@@ -6,6 +6,11 @@ from flask import Blueprint, jsonify, current_app, render_template, session
 requests_bp = Blueprint("requests", __name__, url_prefix="/requests")
 
 
+@requests_bp.before_request
+def update_role():
+    utils.update_role()
+
+
 @requests_bp.route("", methods=["GET"])
 def dashboard():
     username = session.get("username")
@@ -19,6 +24,17 @@ def get_pending_books():
         books_data = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/pending"
         )
+
+        # filter out books that are created by the current user
+        books_data = [
+            item
+            for item in books_data
+            if not (
+                isinstance(item.get("user"), dict)
+                and item["user"].get("keycloakId") == session.get("keycloak_user_id")
+            )
+        ]
+
         return jsonify(books_data)
     except utils.NoPermissionError:
         return (
@@ -36,6 +52,17 @@ def get_pending_reviews():
         reviews_data = utils.make_authenticated_get_request(
             f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/pending"
         )
+
+        # filter out reviews that are created by the current user
+        reviews_data = [
+            item
+            for item in reviews_data
+            if not (
+                isinstance(item.get("user"), dict)
+                and item["user"].get("keycloakId") == session.get("keycloak_user_id")
+            )
+        ]
+
         return jsonify(reviews_data)
     except utils.NoPermissionError:
         return (

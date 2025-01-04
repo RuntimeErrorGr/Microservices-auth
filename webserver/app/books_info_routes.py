@@ -1,10 +1,24 @@
 import requests
 import logging
-from flask import Blueprint, jsonify, current_app, render_template, session, request
+from flask import (
+    Blueprint,
+    jsonify,
+    current_app,
+    render_template,
+    session,
+    request,
+    redirect,
+    url_for,
+)
 from datetime import datetime
 from . import routes_utils as utils
 
 books_info_bp = Blueprint("books", __name__, url_prefix="/books")
+
+
+@books_info_bp.before_request
+def update_role():
+    utils.update_role()
 
 
 @books_info_bp.route("", methods=["GET", "POST"])

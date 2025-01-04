@@ -66,7 +66,7 @@ Requests Page
                     const books = await response.json();
                     booksTableBody.innerHTML = "";
                     if (books.length === 0) {
-                        booksTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4">No book requests at the moment.</td></tr>`;
+                        booksTableBody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-gray-500">No book requests at the moment.</td></tr>`;
                     } else {
                         books.forEach(book => {
                             const row = document.createElement("tr");
@@ -129,7 +129,7 @@ Requests Page
                     const reviews = await response.json();
                     reviewsTableBody.innerHTML = "";
                     if (reviews.length === 0) {
-                        reviewsTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4">No reviews to process at the moment.</td></tr>`;
+                        reviewsTableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-gray-500">No reviews to process at the moment.</td></tr>`;
                     } else {
                         reviews.forEach(review => {
                             const row = document.createElement("tr");

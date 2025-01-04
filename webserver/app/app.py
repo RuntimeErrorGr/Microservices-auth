@@ -1,8 +1,10 @@
 import logging
 import sys
 import os
-from flask import Flask
+from flask import Flask, session
+from datetime import timedelta
 from .config import Config
+from .routes_utils import get_user_roles
 from .auth_routes import auth_bp
 from .books_info_routes import books_info_bp
 from .requests_routes import requests_bp
@@ -22,6 +24,12 @@ def create_app():
     configure_logging()
     configure_app(app)
     configure_blueprints(app)
+
+    app.permanent_session_lifetime = timedelta(seconds=1800)
+
+    @app.before_request
+    def update_session_timeout():
+        session.permanent = True
 
     logging.info("Flask Webserver started")
 

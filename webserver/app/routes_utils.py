@@ -1,6 +1,6 @@
 import logging
 import requests
-from flask import session, current_app
+from flask import session, current_app, redirect, url_for
 
 
 class NoPermissionError(Exception):
@@ -196,3 +196,48 @@ def get_user_roles(admin_token, user_id, client_id):
     except requests.exceptions.RequestException:
         logging.error("Roles not found")
         return None
+
+
+def update_role():
+    with current_app.app_context():
+        try:
+            if session.get("Authorization"):
+                admin_token = get_admin_token()
+                user_id = session.get("keycloak_user_id")
+                client_id = get_client_id(admin_token)
+
+                updated_roles = get_user_roles(admin_token, user_id, client_id)
+                new_role = "-".join(updated_roles)
+                logging.info("Roles: %s -> %s", session.get("role"), new_role)
+                if new_role != session.get("role"):
+                    refresh_token = session.get("refresh_token")
+                    if refresh_token:
+                        data = {
+                            "client_id": ISTIO_CLIENT_ID,
+                            "grant_type": "refresh_token",
+                            "refresh_token": refresh_token,
+                        }
+                        response = requests.post(
+                            current_app.config["KEYCLOAK_REALM_ISTIO_OPENID_TOKEN_URL"],
+                            data=data,
+                            verify=False,
+                            timeout=1,
+                        )
+                        if response.status_code == 200:
+                            token_data = response.json()
+                            session["Authorization"] = token_data["access_token"]
+                            session["refresh_token"] = token_data["refresh_token"]
+                            session["role"] = new_role
+                            logging.info("Access token refreshed, and role updated.")
+                        else:
+                            logging.error("Failed to refresh access token.")
+                            session.clear()
+                            return redirect(url_for("auth.login"))
+                    else:
+                        logging.warning("Refresh token is missing. Clearing session.")
+                        session.clear()
+                        return redirect(url_for("auth.login"))
+        except requests.exceptions.RequestException as e:
+            logging.error("Error during role update or token refresh: %s", str(e))
+            session.clear()
+            return redirect(url_for("auth.login"))

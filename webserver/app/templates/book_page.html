@@ -153,7 +153,7 @@ Book Details - {{ isbn }}
                 if (response.ok) {
                     closeAddReviewModal();
                     displaySuccessMessageWithWhiteBorderAndButtonModal(
-                        "Sent review successfully!",
+                        "Review added successfully! Please wait for the review to be approved",
                         "close-btn",
                         "Ok",
                     );
@@ -165,21 +165,30 @@ Book Details - {{ isbn }}
             }
         }
 
-        // Fetch and render book details
         async function fetchAndRenderBookDetails() {
             try {
                 const response = await fetch(`/books/details/${isbn}`);
                 if (response.ok) {
                     const book = await response.json();
-                    document.getElementById("book-details").innerHTML = `
-                        <tr>
-                            <td class="px-6 py-4 border-b text-center">${book.author}</td>
-                            <td class="px-6 py-4 border-b text-center">${book.genre}</td>
-                            <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
-                            <td class="px-6 py-4 border-b text-center">${book.isbn}</td>
-                        </tr>
-                    `;
-                    document.getElementById("book-description").textContent = book.description;
+                    const bookDetailsBody = document.getElementById("book-details");
+                    
+                    if (!book || Object.keys(book).length === 0) {
+                        bookDetailsBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">No book details available.</td>
+                            </tr>
+                        `;
+                    } else {
+                        bookDetailsBody.innerHTML = `
+                            <tr>
+                                <td class="px-6 py-4 border-b text-center">${book.author}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.genre}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.publicationDate}</td>
+                                <td class="px-6 py-4 border-b text-center">${book.isbn}</td>
+                            </tr>
+                        `;
+                        document.getElementById("book-description").textContent = book.description || "No description available.";
+                    }
                 } else if (response.status === 403) {
                     displayErrorMessageWithWhiteBorder(
                         "book-details-section",
@@ -199,14 +208,24 @@ Book Details - {{ isbn }}
             }
         }
 
-        // Fetch and render book reviews
         async function fetchAndRenderBookReviews() {
             try {
                 const response = await fetch(`/books/reviews/${isbn}`);
+                const reviewsTableBody = document.getElementById("reviews-table-body");
+
                 if (response.ok) {
                     const reviews = await response.json();
-                    const reviewsTableBody = document.getElementById("reviews-table-body");
-                    reviewsTableBody.innerHTML = "";
+
+                    if (reviews.length === 0) {
+                        reviewsTableBody.innerHTML = `
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">No reviews available for this book.</td>
+                            </tr>
+                        `;
+                        return;
+                    }
+
+                    reviewsTableBody.innerHTML = ""; // Clear table body
                     const userRole = getUserRole();
 
                     reviews.forEach(review => {
@@ -262,9 +281,14 @@ Book Details - {{ isbn }}
                 }
             } catch (error) {
                 console.error("Error fetching reviews:", error);
-                displayErrorMessage("reviews-section", error.message);
+                reviewsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-center text-red-500">Error loading reviews. Please try again later.</td>
+                    </tr>
+                `;
             }
         }
+
 
         async function handleDeleteReview(review) {
             try {
