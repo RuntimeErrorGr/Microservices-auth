@@ -104,7 +104,9 @@ Response should be:
     }
 ]
 ```
+
 ### (29.12.2024)
+
 1. Keycloak persistent storage is in kubernetes now.
 2. We have a minimal frontend with login page, dashboard, book page and a generic layout.
    ![app3](https://github.com/user-attachments/assets/9f5864bb-0d44-40b5-8b5f-b54b49fd84e7)
@@ -116,3 +118,4 @@ Response should be:
 
 1. Go through the prerequisites setup.
 2. Just _kubeclt apply -f_ all .yaml files you find (would be nice to have a script for this).
+3. Have fun.
