@@ -24,6 +24,11 @@ def index():
     return render_template("index.html")
 
 
+@auth_bp.route("/teapot", methods=["GET"])
+def teapot():
+    return "I'm a teapot from the POSD project app", 418
+
+
 @auth_bp.route("/login", methods=["POST"])
 def login():
     username = request.form.get("username")

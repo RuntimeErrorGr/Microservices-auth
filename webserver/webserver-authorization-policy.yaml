@@ -33,6 +33,7 @@ spec:
                 "/login",
                 "/requests",
                 "/requests/*",
+                "/teapot",
               ]
         - operation:
             methods: ["POST"]
