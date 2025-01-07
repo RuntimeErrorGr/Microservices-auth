@@ -1,0 +1,140 @@
+{% extends "base_layout.html" %}
+
+{% block title %}
+    Settings Page
+{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto mt-8">
+        <h1 class="text-2xl text-center mt-4">User Management</h1>
+
+        <div class="mt-6">
+            <table class="table-auto border-collapse border border-gray-300 w-full text-center">
+                <thead>
+                <tr class="bg-gray-200">
+                    <th class="border border-gray-300 px-4 py-2">Username</th>
+                    <th class="border border-gray-300 px-4 py-2">Role</th>
+                    <th class="border border-gray-300 px-4 py-2">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for user in users %}
+                    <tr class="hover:bg-gray-100">
+                        <td class="border border-gray-300 px-4 py-2">{{ user.username }}</td>
+                        <td class="border border-gray-300 px-4 py-2">{{ user.role }}</td>
+                        <td class="border border-gray-300 px-4 py-2">
+                            <button
+                                    class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                                    onclick="openRoleChangePopup('{{ user.username }}', '{{ user.role }}')">
+                                Change Role
+                            </button>
+                            <button
+                                    class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 mt-2"
+                                    onclick="deleteRole('{{ user.username }}')">
+                                Delete Role
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div id="role-popup" class="hidden fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center">
+            <div class="bg-white p-6 rounded shadow-lg w-96">
+                <h2 class="text-xl font-bold mb-4">Change Role</h2>
+                <form id="role-change-form" method="POST">
+                    <input type="hidden" id="username-input" name="username">
+                    <label for="role-select" class="block mb-2 font-semibold">Select Role:</label>
+                    <select id="role-select" name="role" class="block w-full border border-gray-300 p-2 rounded mb-4">
+                        {% for role in roles %}
+                            <option value="{{ role }}">{{ role }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" onclick="closeRoleChangePopup()"
+                                class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel
+                        </button>
+                        <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            Save
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+<script>
+    // Function to open the role change popup and populate the username and current role
+    function openRoleChangePopup(username, currentRole) {
+        document.getElementById('role-popup').classList.remove('hidden');
+        document.getElementById('username-input').value = username;
+        document.getElementById('role-select').value = currentRole;
+    }
+
+    // Function to close the role change popup
+    function closeRoleChangePopup() {
+        document.getElementById('role-popup').classList.add('hidden');
+    }
+
+    // Function to handle role change form submission
+    document.getElementById('role-change-form').addEventListener('submit', function (event) {
+        event.preventDefault();  // Prevent the default form submission
+
+        // Get the values of the form fields
+        const username = document.getElementById('username-input').value;
+        const role = document.getElementById('role-select').value;
+
+        // Send the data to the backend using fetch
+        fetch('/settings/change_role', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username: username, role: role })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Role changed successfully!');
+                closeRoleChangePopup();
+            } else {
+                alert('Failed to change role');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while changing the role.');
+        });
+    });
+
+    // Function to handle role deletion
+    function deleteRole(username) {
+        const confirmation = confirm("Are you sure you want to delete the role of this user?");
+        if (confirmation) {
+            fetch('/settings/delete_role', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: username })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Role deleted successfully!');
+                    location.reload();  // Reload the page to update the user list
+                } else {
+                    alert('Failed to delete role');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the role.');
+            });
+        }
+    }
+</script>
+
+{% endblock %}

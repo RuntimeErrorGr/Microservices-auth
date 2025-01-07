@@ -8,7 +8,7 @@ spec:
       app: webserver
   jwtRules:
     - issuer: "https://posd-app-keycloak.com/realms/Istio"
-      jwksUri: "http://10.105.139.64:88/realms/Istio/protocol/openid-connect/certs"
+      jwksUri: "http://10.100.249.244:88/realms/Istio/protocol/openid-connect/certs"
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -22,7 +22,7 @@ spec:
   rules:
     - to:
         - operation:
-            methods: ["GET"]
+            methods: [ "GET" ]
             paths:
               [
                 "/",
@@ -33,10 +33,13 @@ spec:
                 "/login",
                 "/requests",
                 "/requests/*",
+                "/settings",
               ]
+    - to:
         - operation:
-            methods: ["POST"]
-            paths: ["/books", "/books/reviews/*", "/login", "/logout"]
+            methods: [ "POST" ]
+            paths: [ "/books", "/books/reviews/*", "/login", "/logout", "/settings/change_role" ]
+    - to:
         - operation:
-            methods: ["DELETE"]
-            paths: ["/books/*"]
+            methods: [ "DELETE" ]
+            paths: [ "/books/*", "/settings/delete_role" ]

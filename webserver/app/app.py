@@ -8,6 +8,7 @@ from .routes_utils import get_user_roles
 from .auth_routes import auth_bp
 from .books_info_routes import books_info_bp
 from .requests_routes import requests_bp
+from .settings_routes import settings_bp
 
 __all__ = ["create_app"]
 
@@ -45,6 +46,7 @@ def configure_blueprints(app: Flask):
     app.register_blueprint(auth_bp)
     app.register_blueprint(books_info_bp)
     app.register_blueprint(requests_bp)
+    app.register_blueprint(settings_bp)
 
 
 def configure_logging():

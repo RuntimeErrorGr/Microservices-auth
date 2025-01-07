@@ -43,9 +43,11 @@
                 </a>
             </li>
             <li>
-                <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
-                    Settings
-                </a>
+                {% if role == 'admin' %}
+                    <a href="{{ url_for('settings.dashboard') }}" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                        Settings
+                    </a>
+                {% endif %}
             </li>
             <li>
                 <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
@@ -105,9 +107,9 @@
     }
 
     function displayErrorMessageWithWhiteBorderAndButtonModal(
-        errorMessage, 
-        buttonId, 
-        buttonText, 
+        errorMessage,
+        buttonId,
+        buttonText,
         closeAction = () => document.body.removeChild(document.getElementById("error-modal"))
 )   {
         const modal = document.createElement('div');
@@ -123,7 +125,7 @@
 
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('flex', 'justify-center', 'mt-4');
-        
+
         const button = document.createElement('button');
         button.id = buttonId;
         button.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'hover:bg-blue-700');
@@ -137,15 +139,15 @@
         document.body.appendChild(modal);
 
         button.addEventListener('click', () => {
-            closeAction(); 
+            closeAction();
             document.body.removeChild(modal);
         });
     }
 
     function displaySuccessMessageWithWhiteBorderAndButtonModal(
-        successMessage, 
-        buttonId, 
-        buttonText, 
+        successMessage,
+        buttonId,
+        buttonText,
         closeAction = () => {
             const modal = document.getElementById("success-modal");
             if (modal) {
@@ -167,7 +169,7 @@
 
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('flex', 'justify-center', 'mt-4');
-        
+
         const button = document.createElement('button');
         button.id = buttonId;
         button.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded-md', 'hover:bg-blue-700');
@@ -181,7 +183,7 @@
         document.body.appendChild(modal);
 
         button.addEventListener('click', () => {
-            closeAction(); 
+            closeAction();
             document.body.removeChild(modal);
         });
     }
