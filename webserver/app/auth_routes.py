@@ -62,7 +62,6 @@ def login():
             session["role"] = "-".join(
                 utils.get_user_roles(admin_token, user_id, client_id)
             )
-            session["users"] = [user.to_dict() for user in utils.get_users(admin_token, client_id)]
             session["roles"] = utils.get_roles(admin_token, client_id)
             logging.info("Role: %s", session["role"])
             return jsonify({"success": True, "redirect": url_for("auth.dashboard")})

@@ -14,6 +14,9 @@ def update_role():
 
 @settings_bp.route("", methods=["GET"])
 def dashboard():
+    admin_token = utils.get_admin_token()
+    client_id = utils.get_client_id(admin_token)
+    session["users"] = [user.to_dict() for user in utils.get_users(admin_token, client_id)]
     users = session.get("users")
     username = session.get("username")
     role = session.get("role")

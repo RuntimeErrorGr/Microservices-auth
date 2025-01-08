@@ -234,7 +234,11 @@ def get_users(admin_token, client_id):
         for user_data in raw_users:
             username = user_data.get("username")
             user_id = user_data.get("id")
-            role = get_user_roles(admin_token, user_id, client_id)[0]
+            roles = get_user_roles(admin_token, user_id, client_id)
+            if roles:
+                role = roles[0]
+            else:
+                role = None
             users.append(User(username=username, role=role, id=user_id))
         return users
 
@@ -270,6 +274,7 @@ def get_roles(admin_token, client_id):
 
 
 def change_role(username, role_name):
+    delete_role(username)  # first delete the role, because it will otherwise just add one after the other
     admin_token = get_admin_token()
     client_id = get_client_id(admin_token)
     headers = {
@@ -293,10 +298,12 @@ def change_role(username, role_name):
     for user in users:
         if user.get("username") == username:
             user_id = user.get("id")
-    logging.info(f"Change role of user with username {username} and user_id {user_id} to role_name {role_name} and role_id {role_id}")
+    logging.info(
+        f"Change role of user with username {username} and user_id {user_id} to role_name {role_name} and role_id {role_id}")
     change_role_url = f"{current_app.config['KEYCLOAK_USERS_URL']}/{user_id}/role-mappings/clients/{client_id}"
     role_payload = [
-        {"id": role_id}
+        {"id": role_id,
+         "name": role_name}
     ]
     try:
         response = requests.post(
