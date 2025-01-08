@@ -7,3 +7,6 @@ books_information/.idea/jarRepositories.xml
 books_information/.idea/misc.xml
 books_information/.idea/vcs.xml
 /my-report.pdf
+*.class
+/books_information/target
+/webserver/.idea

@@ -5,5 +5,5 @@ metadata:
 data:
   FLASK_APP: "app/__init__.py"
   PROJECT_NAME: "webserver"
-  KEYCLOAK_URL: "https://posd-app-keycloak.com"
+  KEYCLOAK_URL: "http://10.100.249.244:88"
   BOOKS_SERVICE_URL: "http://books-information-service:8080"

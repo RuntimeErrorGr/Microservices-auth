@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: webserver
-          image: andrei8080/webserver:latest
+          image: andrei8080/webserver:dev-stefan
           ports:
             - containerPort: 5000
           envFrom:
