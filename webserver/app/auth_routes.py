@@ -34,7 +34,6 @@ def login():
     username = request.form.get("username")
     password = request.form.get("password")
     
-    # Log inputs (safely)
     logging.info("Login attempt for user: %s", username)
 
     data = f"client_id=Istio&username={username}&password={password}&grant_type=password"
@@ -48,7 +47,7 @@ def login():
             current_app.config["KEYCLOAK_REALM_ISTIO_OPENID_TOKEN_URL"],
             data=data,
             headers=headers,
-            verify=False,  # This is critical - matches the -k flag in curl
+            verify=False,
             timeout=5
         )
         
