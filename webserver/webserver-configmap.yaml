@@ -5,5 +5,10 @@ metadata:
 data:
   FLASK_APP: "app/__init__.py"
   PROJECT_NAME: "webserver"
-  KEYCLOAK_URL: "https://posd-app-keycloak.com"
+  KEYCLOAK_URL: "http://keycloak-service:88"
+  KEYCLOAK_REALM_ISTIO_OPENID_TOKEN_URL: "http://keycloak-service:88/realms/Istio/protocol/openid-connect/token"
+  KEYCLOAK_REALM_MASTER_OPENID_TOKEN_URL: "http://keycloak-service:88/realms/master/protocol/openid-connect/token"
+  KEYCLOAK_REALM_ISTIO_OPENID_LOGOUT_URL: "http://keycloak-service:88/realms/Istio/protocol/openid-connect/logout"
+  KEYCLOAK_USERS_URL: "http://keycloak-service:88/admin/realms/Istio/users"
+  KEYCLOAK_CLIENTS_URL: "http://keycloak-service:88/admin/realms/Istio/clients"
   BOOKS_SERVICE_URL: "http://books-information-service:8080"

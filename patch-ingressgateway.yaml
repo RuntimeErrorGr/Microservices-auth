@@ -1,0 +1,15 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: istio-proxy
+        image: docker.io/istio/proxyv2:1.12.2
+        volumeMounts:
+        - name: ingressgateway-certs
+          mountPath: /etc/istio/ingressgateway-certs
+          readOnly: true
+      volumes:
+      - name: ingressgateway-certs
+        secret:
+          secretName: my-tls
+          optional: true

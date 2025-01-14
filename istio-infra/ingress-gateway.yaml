@@ -6,24 +6,12 @@ spec:
   selector:
     istio: ingressgateway
   servers:
-    - port:
-        number: 443
-        name: https-webserver
-        protocol: HTTPS
-      tls:
-        mode: SIMPLE
-        credentialName: my-tls
-      hosts:
-        - "posd-app.com"
-    - port:
-        number: 443
-        name: https-keycloak
-        protocol: HTTPS
-      tls:
-        mode: SIMPLE
-        credentialName: my-tls-2
-      hosts:
-        - "posd-app-keycloak.com"
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -31,18 +19,40 @@ metadata:
   name: posd-app-vs
 spec:
   hosts:
-    - "posd-app.com"
+  - "*"
   gateways:
-    - posd-app-gateway
+  - posd-app-gateway
   http:
-    - match:
-        - uri:
-            prefix: "/"
-      route:
-        - destination:
-            host: webserver-service
-            port:
-              number: 80
+  - match:
+    - uri:
+        prefix: "/"
+    route:
+    - destination:
+        host: webserver-service.default.svc.cluster.local
+        port:
+          number: 80
+    timeout: 5s
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+      retryOn: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: webserver-destination
+spec:
+  host: webserver-service.default.svc.cluster.local
+  trafficPolicy:
+    loadBalancer:
+      simple: ROUND_ROBIN
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 5s
+      http:
+        http1MaxPendingRequests: 100
+        maxRequestsPerConnection: 10
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
@@ -54,11 +64,8 @@ spec:
   gateways:
     - posd-app-gateway
   http:
-    - match:
-        - uri:
-            prefix: "/"
-      route:
+    - route:
         - destination:
-            host: keycloak-service
+            host: keycloak-service.default.svc.cluster.local
             port:
               number: 88

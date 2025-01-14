@@ -8,7 +8,7 @@ spec:
       app: webserver
   jwtRules:
     - issuer: "https://posd-app-keycloak.com/realms/Istio"
-      jwksUri: "http://10.105.139.64:88/realms/Istio/protocol/openid-connect/certs"
+      jwksUri: "http://10.96.51.185:88/realms/Istio/protocol/openid-connect/certs"
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy

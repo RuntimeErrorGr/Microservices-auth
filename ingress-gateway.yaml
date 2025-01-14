@@ -1,0 +1,95 @@
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: posd-app-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "posd-app.com"
+    - "posd-app-keycloak.com"
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: my-tls
+      minProtocolVersion: TLSV1_2
+      maxProtocolVersion: TLSV1_3
+    hosts:
+    - "posd-app.com"
+  - port:
+      number: 443
+      name: https-keycloak
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: my-tls-2
+    hosts:
+    - "posd-app-keycloak.com"
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: posd-app-vs
+spec:
+  hosts:
+  - "posd-app.com"
+  gateways:
+  - posd-app-gateway
+  http:
+  - route:
+    - destination:
+        host: webserver-service
+        port:
+          number: 80
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: keycloak-vs
+spec:
+  hosts:
+  - "posd-app-keycloak.com"
+  gateways:
+  - posd-app-gateway
+  http:
+  - route:
+    - destination:
+        host: keycloak-service
+        port:
+          number: 88
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: istio-ingressgateway
+  namespace: istio-system
+spec:
+  selector:
+    matchLabels:
+      app: istio-ingressgateway
+      istio: ingressgateway
+  template:
+    metadata:
+      labels:
+        app: istio-ingressgateway
+        istio: ingressgateway
+    spec:
+      containers:
+      - name: istio-proxy
+        volumeMounts:
+        - name: ingressgateway-certs
+          mountPath: /etc/istio/ingressgateway-certs
+          readOnly: true
+      volumes:
+      - name: ingressgateway-certs
+        secret:
+          secretName: my-tls
+          optional: true

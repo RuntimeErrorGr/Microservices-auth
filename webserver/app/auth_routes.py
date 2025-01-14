@@ -33,22 +33,26 @@ def teapot():
 def login():
     username = request.form.get("username")
     password = request.form.get("password")
+    
+    # Log inputs (safely)
+    logging.info("Login attempt for user: %s", username)
 
-    data = {
-        "client_id": utils.ISTIO_CLIENT_ID,
-        "username": username,
-        "password": password,
-        "grant_type": "password",
-        "scope:": "profile roles",
+    data = f"client_id=Istio&username={username}&password={password}&grant_type=password"
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': '*/*',
     }
+
     try:
         response = requests.post(
             current_app.config["KEYCLOAK_REALM_ISTIO_OPENID_TOKEN_URL"],
             data=data,
-            verify=False,
-            timeout=1,
+            headers=headers,
+            verify=False,  # This is critical - matches the -k flag in curl
+            timeout=5
         )
-        logging.info("Keycloak response: %s", response.text)
+        
+        logging.info("Keycloak response code: %d", response.status_code)
 
         if response.status_code == 200:
             token_data = response.json()
@@ -65,17 +69,16 @@ def login():
             logging.info("Role: %s", session["role"])
             return jsonify({"success": True, "redirect": url_for("auth.dashboard")})
         else:
-            logging.error("Invalid credentials")
+            logging.error("Login failed with status %s: %s", response.status_code, response.text)
             session.clear()
             return (
                 jsonify({"success": False, "message": "Invalid credentials"}),
                 401,
             )
-    except requests.exceptions.RequestException:
-        logging.error("Invalid credentials")
+    except requests.exceptions.RequestException as e:
+        logging.error("Request exception during login: %s", str(e))
         session.clear()
         return jsonify({"success": False, "message": "Invalid credentials"}), 401
-
 
 @auth_bp.route("/dashboard", methods=["GET"])
 def dashboard():
