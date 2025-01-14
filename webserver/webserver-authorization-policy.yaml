@@ -20,6 +20,7 @@ spec:
       app: webserver
   action: ALLOW
   rules:
+    # General access rule without restrictions
     - to:
         - operation:
             methods: ["GET"]
@@ -34,10 +35,34 @@ spec:
                 "/requests",
                 "/requests/*",
                 "/teapot",
+                "settings/*",
+                "/api/permissions/*", 
+                "/policy/editor/*"
               ]
         - operation:
             methods: ["POST"]
-            paths: ["/books", "/books/reviews/*", "/login", "/logout"]
+            paths: 
+              [
+                "/books", 
+                "/books/reviews/*", 
+                "/login", 
+                "/logout",
+                "/api/permissions/*", 
+                "/policy/editor/*",
+                "/policy/editor"
+              ]
         - operation:
             methods: ["DELETE"]
             paths: ["/books/*"]
+
+    # # Admin access rule
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/policy/editor", "/api/permissions"]
+        - operation:
+            methods: ["POST"]
+            paths: ["/api/permissions/*", "/policy/editor"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["admin"]

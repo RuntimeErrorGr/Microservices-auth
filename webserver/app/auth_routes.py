@@ -62,10 +62,16 @@ def login():
             user_id = utils.get_user_id(admin_token, username)
             session["keycloak_user_id"] = user_id
             client_id = utils.get_client_id(admin_token)
-            session["role"] = "-".join(
-                utils.get_user_roles(admin_token, user_id, client_id)
-            )
-            logging.info("Role: %s", session["role"])
+            roles = utils.get_user_roles(admin_token, user_id, client_id)
+            
+            # Special handling for admin
+            if username == 'admin':
+                roles = ['admin']
+                
+            session["role"] = "-".join(roles)
+            session["user_roles"] = roles  # Add this line
+            
+            logging.info("Role: %s, User roles: %s", session["role"], session.get("user_roles", []))
             return jsonify({"success": True, "redirect": url_for("auth.dashboard")})
         else:
             logging.error("Login failed with status %s: %s", response.status_code, response.text)

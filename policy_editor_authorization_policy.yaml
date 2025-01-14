@@ -1,0 +1,16 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: policy-editor-access
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: webserver
+  rules:
+  - from:
+    - source:
+        principals: ["*"]
+    when:
+    - key: request.auth.claims[resource_access][Istio][roles]
+      values: ["admin"]

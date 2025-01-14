@@ -2,123 +2,121 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6">Istio Resource Access Policy Editor</h1>
+    <h1 class="text-2xl font-bold mb-6">Istio level → change the role - permissions mapping</h1>
     
     <!-- Books Permissions Section -->
     <div class="mb-8">
-        <h2 class="text-xl font-semibold mb-4">Permissions for BOOKS</h2>
+        <div class="text-lg font-semibold mb-4">permissions for BOOKS</div>
         <div class="bg-white rounded-lg shadow p-6">
-            <table class="w-full">
+            <table class="w-full mb-4">
                 <thead>
                     <tr>
-                        <th class="text-left">Role</th>
-                        <th class="text-center">View</th>
-                        <th class="text-center">Add</th>
-                        <th class="text-center">Delete</th>
+                        <th class="text-left w-1/4"></th>
+                        <th class="text-center">view</th>
+                        <th class="text-center">add</th>
+                        <th class="text-center">delete</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td class="py-2">user</td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="user" data-permission="view"></td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="user" data-permission="add"></td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="user" data-permission="delete"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="user" data-permission="view"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="user" data-permission="add"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="user" data-permission="delete"></td>
                     </tr>
                     <tr>
                         <td class="py-2">user verified</td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="verified" data-permission="view"></td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="verified" data-permission="add"></td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="verified" data-permission="delete"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="verified" data-permission="view"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="verified" data-permission="add"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="verified" data-permission="delete"></td>
                     </tr>
                     <tr>
                         <td class="py-2">user verified moderator</td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="moderator" data-permission="view"></td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="moderator" data-permission="add"></td>
-                        <td class="text-center"><input type="checkbox" class="books-permission" data-role="moderator" data-permission="delete"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="moderator" data-permission="view"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="moderator" data-permission="add"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="books" data-role="moderator" data-permission="delete"></td>
                     </tr>
                 </tbody>
             </table>
-            <button id="saveBookPermissions" class="mt-4 px-4 py-2 bg-purple-200 hover:bg-purple-300 rounded">Save</button>
+            <button id="saveBooks" class="w-full bg-purple-200 hover:bg-purple-300 text-gray-800 font-semibold py-2 px-4 rounded">
+                Save
+            </button>
         </div>
     </div>
 
     <!-- Reviews Permissions Section -->
     <div class="mb-8">
-        <h2 class="text-xl font-semibold mb-4">Permissions for REVIEWS</h2>
+        <div class="text-lg font-semibold mb-4">permissions for REVIEWS</div>
         <div class="bg-white rounded-lg shadow p-6">
-            <table class="w-full">
+            <table class="w-full mb-4">
                 <thead>
                     <tr>
-                        <th class="text-left">Role</th>
-                        <th class="text-center">View</th>
-                        <th class="text-center">Add</th>
-                        <th class="text-center">Delete</th>
+                        <th class="text-left w-1/4"></th>
+                        <th class="text-center">view</th>
+                        <th class="text-center">add</th>
+                        <th class="text-center">delete</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td class="py-2">user</td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="user" data-permission="view"></td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="user" data-permission="add"></td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="user" data-permission="delete"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="user" data-permission="view"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="user" data-permission="add"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="user" data-permission="delete"></td>
                     </tr>
                     <tr>
                         <td class="py-2">user verified</td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="verified" data-permission="view"></td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="verified" data-permission="add"></td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="verified" data-permission="delete"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="verified" data-permission="view"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="verified" data-permission="add"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="verified" data-permission="delete"></td>
                     </tr>
                     <tr>
                         <td class="py-2">user verified moderator</td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="moderator" data-permission="view"></td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="moderator" data-permission="add"></td>
-                        <td class="text-center"><input type="checkbox" class="reviews-permission" data-role="moderator" data-permission="delete"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="moderator" data-permission="view"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="moderator" data-permission="add"></td>
+                        <td class="text-center"><input type="checkbox" class="h-5 w-5 bg-purple-200" data-resource="reviews" data-role="moderator" data-permission="delete"></td>
                     </tr>
                 </tbody>
             </table>
-            <button id="saveReviewPermissions" class="mt-4 px-4 py-2 bg-purple-200 hover:bg-purple-300 rounded">Save</button>
+            <button id="saveReviews" class="w-full bg-purple-200 hover:bg-purple-300 text-gray-800 font-semibold py-2 px-4 rounded">
+                Save
+            </button>
         </div>
     </div>
 </div>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Load current permissions
-    fetch('/api/permissions')
-        .then(response => response.json())
-        .then(data => {
-            updateCheckboxes('books', data.books);
-            updateCheckboxes('reviews', data.reviews);
-        });
+    function loadCurrentPermissions() {
+        fetch('/api/permissions')
+            .then(response => response.json())
+            .then(data => {
+                updateCheckboxes('books', data.books_permissions);
+                updateCheckboxes('reviews', data.reviews_permissions);
+            })
+            .catch(error => console.error('Error loading permissions:', error));
+    }
 
     function updateCheckboxes(resource, permissions) {
-        permissions.forEach(perm => {
+        if (!permissions) return;
+        
+        permissions.forEach(permission => {
             const checkbox = document.querySelector(
-                `.${resource}-permission[data-role="${perm.role}"][data-permission="${perm.permission}"]`
+                `input[data-resource="${resource}"][data-role="${permission.role}"][data-permission="${permission.permission}"]`
             );
             if (checkbox) {
-                checkbox.checked = perm.granted;
+                checkbox.checked = permission.granted;
             }
         });
     }
 
-    document.getElementById('saveBookPermissions').addEventListener('click', () => {
-        savePermissions('books');
-    });
-
-    document.getElementById('saveReviewPermissions').addEventListener('click', () => {
-        savePermissions('reviews');
-    });
-
     function savePermissions(resource) {
-        const permissions = [];
-        document.querySelectorAll(`.${resource}-permission`).forEach(checkbox => {
-            permissions.push({
-                role: checkbox.dataset.role,
-                permission: checkbox.dataset.permission,
-                granted: checkbox.checked
-            });
-        });
+        const checkboxes = document.querySelectorAll(`input[data-resource="${resource}"]`);
+        const permissions = Array.from(checkboxes).map(checkbox => ({
+            role: checkbox.dataset.role,
+            permission: checkbox.dataset.permission,
+            granted: checkbox.checked
+        }));
 
         fetch(`/api/permissions/${resource}`, {
             method: 'POST',
@@ -132,10 +130,20 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 alert(`${resource} permissions updated successfully`);
             } else {
-                alert(`Error updating ${resource} permissions`);
+                alert(`Error updating ${resource} permissions: ${data.error}`);
             }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert(`Error saving permissions: ${error}`);
         });
     }
+
+    document.getElementById('saveBooks').addEventListener('click', () => savePermissions('books'));
+    document.getElementById('saveReviews').addEventListener('click', () => savePermissions('reviews'));
+
+    // Load current permissions when page loads
+    loadCurrentPermissions();
 });
 </script>
 {% endblock %}

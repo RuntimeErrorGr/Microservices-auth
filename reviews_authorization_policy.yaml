@@ -1,0 +1,17 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: reviews-policy
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: books-information
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/default/sa/user"]
+    to:
+    - operation:
+        methods: ["GET"]
+        paths: ["/books/*/reviews*"]

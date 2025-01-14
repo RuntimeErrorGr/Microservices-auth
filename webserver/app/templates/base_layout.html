@@ -43,6 +43,13 @@
                 </a>
             </li>
             <li>
+                {% if role == 'admin' %}
+                    <a href="{{ url_for('policy.editor') }}" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
+                        Policy Editor
+                    </a>
+                {% endif %}
+            </li>
+            <li>
                 <a href="#" class="block text-blue-300 hover:bg-blue-700 hover:text-white px-3 py-2 rounded-md text-base font-medium">
                     Settings
                 </a>
