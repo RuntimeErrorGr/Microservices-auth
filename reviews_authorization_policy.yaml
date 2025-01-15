@@ -7,11 +7,8 @@ spec:
   selector:
     matchLabels:
       app: books-information
+  action: DENY
   rules:
-  - from:
-    - source:
-        principals: ["cluster.local/ns/default/sa/user"]
-    to:
-    - operation:
-        methods: ["GET"]
-        paths: ["/books/*/reviews*"]
+    - to:
+        - operation:
+            paths: ["/books/*/reviews*"]

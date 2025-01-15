@@ -1,21 +1,50 @@
+# apiVersion: security.istio.io/v1beta1
+# kind: RequestAuthentication
+# metadata:
+#   name: webserver-request-authentication
+# spec:
+#   selector:
+#     matchLabels:
+#       app: webserver
+#   jwtRules:
+#   - issuer: "https://posd-app-keycloak.com/realms/Istio"
+#     jwksUri: "http://10.96.51.185:88/realms/Istio/protocol/openid-connect/certs"
+#     forwardOriginalToken: true
+#     outputPayloadToHeader: "x-jwt-payload"
+# ---
 apiVersion: security.istio.io/v1beta1
 kind: RequestAuthentication
 metadata:
-  name: webserver-request-authentication
+  name: jwt-auth
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: books-information
+  jwtRules:
+  - issuer: "https://posd-app-keycloak.com/realms/Istio"
+    jwksUri: "http://keycloak-service:88/realms/Istio/protocol/openid-connect/certs"
+    outputPayloadToHeader: "x-jwt-payload"
+---
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: webserver-auth
+  namespace: default
 spec:
   selector:
     matchLabels:
       app: webserver
   jwtRules:
   - issuer: "https://posd-app-keycloak.com/realms/Istio"
-    jwksUri: "http://10.96.51.185:88/realms/Istio/protocol/openid-connect/certs"
-    forwardOriginalToken: true
+    jwksUri: "http://keycloak-service:88/realms/Istio/protocol/openid-connect/certs"
     outputPayloadToHeader: "x-jwt-payload"
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: webserver-auth
+  namespace: default
 spec:
   selector:
     matchLabels:
@@ -25,46 +54,18 @@ spec:
     - to:
         - operation:
             methods: ["GET", "POST"]
-            paths: [
-              "/",
-              "/static/tailwind/tailwind.css",
-              "/login",
-              "/logout",
-              "/debug/policy-access",
-              "/debug/token-check"
-            ]
-
+            paths: ["/", "/login", "/logout", "/dashboard"]
     - to:
         - operation:
-            methods: ["GET"]
-            paths: [
-              "/policy/editor",
-              "/api/permissions"
-            ]
-        - operation:
-            methods: ["POST"]
-            paths: [
-              "/api/permissions/*"
-            ]
+            methods: ["GET", "POST"]
+            paths: 
+              - "/books/*"
+              - "/requests/*"
+              - "/books/add"
+              - "/api/permissions/grant"
       when:
         - key: request.auth.claims[resource_access][Istio][roles]
           values: ["admin"]
-
-    - to:
-        - operation:
-            methods: ["GET"]
-            paths: [
-              "/books",
-              "/books/*",
-              "/dashboard",
-              "/requests",
-              "/requests/*",
-              "/teapot",
-              "settings/*"
-            ]
-      when:
-        - key: request.auth.claims
-          notValues: ["null"]
 
 ---
 apiVersion: security.istio.io/v1beta1

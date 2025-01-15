@@ -137,11 +137,19 @@ def get_permissions():
         config.load_incluster_config()
         custom_api = client.CustomObjectsApi()
         
-        books_permissions = get_policy_permissions(custom_api, 'books')
-        reviews_permissions = get_policy_permissions(custom_api, 'reviews')
+        base_permissions = []
+        for role in ['user', 'verified', 'moderator']:
+            for permission in ['view', 'add', 'delete']:
+                base_permissions.append({
+                    'role': role,
+                    'permission': permission,
+                    'granted': False
+                })
+
+        books_permissions = base_permissions.copy()
+        reviews_permissions = base_permissions.copy()
         
-        current_app.logger.info(f"Fetched books permissions: {books_permissions}")
-        current_app.logger.info(f"Fetched reviews permissions: {reviews_permissions}")
+        current_app.logger.info(f"Initial permissions setup: {base_permissions}")
         
         return jsonify({
             'books_permissions': books_permissions,
@@ -154,57 +162,73 @@ def get_permissions():
 
 def create_authorization_policy(resource, permissions):
     """Create Istio Authorization Policy based on permissions"""
-    rules = []
-    app_label = "books-information" if resource == "books" else "webserver"
-    
-    for role in ['user', 'verified', 'moderator']:
-        role_permissions = [p for p in permissions if p['role'] == role and p['granted']]
+    try:
+        app_label = "books-information" if resource == "books" else "webserver"
         
-        if role_permissions:
-            methods = []
-            
-            for perm in role_permissions:
-                if perm['permission'] == 'view':
-                    methods.append('GET')
-                elif perm['permission'] == 'add':
-                    methods.append('POST')
-                elif perm['permission'] == 'delete':
-                    methods.append('DELETE')
-
-            if methods:
-                rule = {
-                    'from': [{
-                        'source': {
-                            'principals': [f"cluster.local/ns/default/sa/{role}"]
-                        }
-                    }],
-                    'to': [{
-                        'operation': {
-                            'methods': methods,
-                            'paths': ['/books*'] if resource == 'books' else ['/books/*/reviews*']
-                        }
-                    }]
-                }
-                rules.append(rule)
-
-    policy = {
-        'apiVersion': 'security.istio.io/v1beta1',
-        'kind': 'AuthorizationPolicy',
-        'metadata': {
-            'name': f"{resource}-policy",
-            'namespace': 'default'
-        },
-        'spec': {
-            'selector': {
-                'matchLabels': {
-                    'app': app_label
-                }
+        policy = {
+            'apiVersion': 'security.istio.io/v1beta1',
+            'kind': 'AuthorizationPolicy',
+            'metadata': {
+                'name': f"{resource}-policy",
+                'namespace': 'default'
             },
-            'rules': rules
+            'spec': {
+                'selector': {
+                    'matchLabels': {
+                        'app': app_label
+                    }
+                }
+            }
         }
-    }
 
-    return policy
+        granted_permissions = [p for p in permissions if p['granted']]
+        
+        if not granted_permissions:
+            policy['spec']['action'] = 'DENY'
+            policy['spec']['rules'] = [{
+                'to': [{
+                    'operation': {
+                        'paths': ['/books*'] if resource == 'books' else ['/books/*/reviews*']
+                    }
+                }]
+            }]
+        else:
+            policy['spec']['action'] = 'ALLOW'
+            rules = []
+            
+            for role in ['user', 'verified', 'moderator']:
+                role_permissions = [p for p in granted_permissions if p['role'] == role]
+                if role_permissions:
+                    methods = []
+                    if any(p['permission'] == 'view' for p in role_permissions):
+                        methods.append('GET')
+                    if any(p['permission'] == 'add' for p in role_permissions):
+                        methods.append('POST')
+                    if any(p['permission'] == 'delete' for p in role_permissions):
+                        methods.append('DELETE')
+                    
+                    if methods:
+                        rule = {
+                            'when': [{
+                                'key': 'request.auth.claims[resource_access][Istio][roles]',
+                                'values': [role]
+                            }],
+                            'to': [{
+                                'operation': {
+                                    'methods': methods,
+                                    'paths': ['/books*'] if resource == 'books' else ['/books/*/reviews*']
+                                }
+                            }]
+                        }
+                        rules.append(rule)
+            
+            policy['spec']['rules'] = rules
+
+        return policy
+        
+    except Exception as e:
+        current_app.logger.error(f"Error creating policy: {str(e)}")
+        raise
 
 @policy_blueprint.route('/api/permissions/<resource>', methods=['POST'])
 @admin_required
@@ -214,32 +238,58 @@ def update_resource_permissions(resource):
         custom_api = client.CustomObjectsApi()
         
         permissions = request.json.get('permissions', [])
-        current_app.logger.info(f"Updating {resource} permissions: {permissions}")
+        current_app.logger.info(f"Received request to update {resource} permissions:")
+        current_app.logger.info(f"Request data: {request.json}")
         
-        policy = create_authorization_policy(resource, permissions)
+        policies = create_authorization_policies(resource, permissions)
         
-        try:
-            custom_api.replace_namespaced_custom_object(
-                group="security.istio.io",
-                version="v1beta1",
-                namespace="default",
-                plural="authorizationpolicies",
-                name=f"{resource}-policy",
-                body=policy
-            )
-            current_app.logger.info(f"Updated {resource} policy")
-        except client.rest.ApiException as e:
-            if e.status == 404:
-                custom_api.create_namespaced_custom_object(
-                    group="security.istio.io",
-                    version="v1beta1",
-                    namespace="default",
-                    plural="authorizationpolicies",
-                    body=policy
-                )
-                current_app.logger.info(f"Created new {resource} policy")
-            else:
-                raise
+        current_app.logger.info(f"Final policies to be applied:")
+        current_app.logger.info(f"Books policy: {policies['books']}")
+        current_app.logger.info(f"Reviews policy: {policies['reviews']}")
+        
+        if resource == 'books':
+            current_app.logger.info(f"New books policy to be applied: {policies['books']}")
+        else:
+            current_app.logger.info(f"New reviews policy to be applied: {policies['reviews']}")
+        
+        for policy_name, policy in policies.items():
+            try:
+                try:
+                    existing_policy = custom_api.get_namespaced_custom_object(
+                        group="security.istio.io",
+                        version="v1beta1",
+                        namespace="default",
+                        plural="authorizationpolicies",
+                        name=f"{policy_name}-policy"
+                    )
+                    policy['metadata']['resourceVersion'] = existing_policy['metadata']['resourceVersion']
+                    
+                    custom_api.replace_namespaced_custom_object(
+                        group="security.istio.io",
+                        version="v1beta1",
+                        namespace="default",
+                        plural="authorizationpolicies",
+                        name=f"{policy_name}-policy",
+                        body=policy
+                    )
+                    current_app.logger.info(f"Updated {policy_name} policy")
+                    
+                except client.rest.ApiException as e:
+                    if e.status == 404:
+                        custom_api.create_namespaced_custom_object(
+                            group="security.istio.io",
+                            version="v1beta1",
+                            namespace="default",
+                            plural="authorizationpolicies",
+                            body=policy
+                        )
+                        current_app.logger.info(f"Created new {policy_name} policy")
+                    else:
+                        raise
+                
+            except Exception as e:
+                current_app.logger.error(f"Error updating {policy_name} policy: {str(e)}")
+                return jsonify({'error': f"Error updating {policy_name} policy: {str(e)}"}), 500
         
         return jsonify({'success': True})
         
