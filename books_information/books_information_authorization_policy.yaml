@@ -75,5 +75,3 @@ spec:
           values: ["user"]
         - key: request.auth.claims[resource_access][Istio][roles]
           values: ["verified"]
-          # - key: request.auth.claims[resource_access][Istio][roles]
-          #   values: ["curator", "moderator", "admin"]

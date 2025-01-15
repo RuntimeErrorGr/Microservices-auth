@@ -13,6 +13,7 @@ spec:
     metadata:
       labels:
         app: books-information
+        sidecar.istio.io/inject: "true"
     spec:
       containers:
         - name: books-information

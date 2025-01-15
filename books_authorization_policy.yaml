@@ -1,4 +1,17 @@
 apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: books-information-auth
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: books-information
+  jwtRules:
+  - issuer: "https://posd-app-keycloak.com/realms/Istio"
+    jwksUri: "http://10.96.51.185:88/realms/Istio/protocol/openid-connect/certs"
+---
+apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: books-policy
@@ -7,13 +20,12 @@ spec:
   selector:
     matchLabels:
       app: books-information
-  action: DENY
+  action: ALLOW
   rules:
     - to:
-        - operation:
-            paths: 
-              - "/books*"
-              - "/books/*/reviews*"
+      - operation:
+          methods: ["GET", "POST"]
+          paths: ["/books", "/books/*"]
       when:
-        - key: request.auth.claims[resource_access][Istio][roles]
-          notValues: ["admin"]
+        - key: request.auth.claims
+          notValues: ["null"]
