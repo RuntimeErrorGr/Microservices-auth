@@ -26,6 +26,11 @@ metadata:
     app: webserver
 spec:
   replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: webserver
@@ -33,6 +38,7 @@ spec:
     metadata:
       labels:
         app: webserver
+      annotations:
         sidecar.istio.io/inject: "true"
     spec:
       serviceAccountName: webserver-sa
@@ -48,14 +54,21 @@ spec:
             httpGet:
               path: /
               port: 5000
-            initialDelaySeconds: 5
-            periodSeconds: 10
+            initialDelaySeconds: 10
+            periodSeconds: 5
           livenessProbe:
             httpGet:
               path: /
               port: 5000
             initialDelaySeconds: 15
             periodSeconds: 20
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
@@ -69,3 +82,29 @@ spec:
   selector:
     app: webserver
   type: ClusterIP
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: istio-policy-manager
+rules:
+- apiGroups: ["security.istio.io"]
+  resources: ["authorizationpolicies"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: webserver-policy-manager
+subjects:
+- kind: ServiceAccount
+  name: webserver-sa
+  namespace: default
+roleRef:
+  kind: ClusterRole
+  name: istio-policy-manager
+  apiGroup: rbac.authorization.k8s.io

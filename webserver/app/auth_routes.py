@@ -10,24 +10,30 @@ from flask import (
 )
 import requests
 import logging
+import jwt
 from . import routes_utils as utils
+from datetime import timedelta
 
 auth_bp = Blueprint("auth", __name__)
 
+@auth_bp.before_request
+def before_request():
+    session.permanent = True
+    current_app.permanent_session_lifetime = timedelta(hours=1)
 
 @auth_bp.route("/", methods=["GET"])
 def index():
     if session.get("Authorization"):
-        logging.info("User already logged in")
-        return redirect(url_for("auth.dashboard"))
+        try:
+            token = session.get("Authorization")
+            decoded_token = jwt.decode(token, options={"verify_signature": False})
+            logging.info("User already logged in")
+            return redirect(url_for("auth.dashboard"))
+        except jwt.PyJWTError:
+            session.clear()
+            logging.info("Invalid token, clearing session")
     logging.info("User not logged in")
     return render_template("index.html")
-
-
-@auth_bp.route("/teapot", methods=["GET"])
-def teapot():
-    return "I'm a teapot from the POSD project app", 418
-
 
 @auth_bp.route("/login", methods=["POST"])
 def login():
@@ -58,28 +64,43 @@ def login():
             session["Authorization"] = token_data["access_token"]
             session["refresh_token"] = token_data["refresh_token"]
             session["username"] = username
-            admin_token = utils.get_admin_token()
-            user_id = utils.get_user_id(admin_token, username)
-            session["keycloak_user_id"] = user_id
-            client_id = utils.get_client_id(admin_token)
-            roles = utils.get_user_roles(admin_token, user_id, client_id)
-            
-            # Special handling for admin
-            if username == 'admin':
-                roles = ['admin']
+
+            try:
+                decoded_token = jwt.decode(token_data["access_token"], options={"verify_signature": False})
                 
-            session["role"] = "-".join(roles)
-            session["user_roles"] = roles  # Add this line
+                realm_roles = decoded_token.get('realm_access', {}).get('roles', [])
+                resource_roles = decoded_token.get('resource_access', {}).get('Istio', {}).get('roles', [])
+                
+                all_roles = list(set(realm_roles + resource_roles))
+                
+                session["user_roles"] = all_roles
+                session["role"] = "-".join(all_roles)
+                session["resource_access"] = {
+                    "Istio": {
+                        "roles": resource_roles
+                    }
+                }
+                session["realm_access"] = {
+                    "roles": realm_roles
+                }
+
+                logging.info(f"Login successful for {username}")
+                logging.info(f"All roles: {all_roles}")
+                logging.info(f"Realm roles: {realm_roles}")
+                logging.info(f"Resource roles: {resource_roles}")
+                
+                return jsonify({"success": True, "redirect": url_for("auth.dashboard")})
             
-            logging.info("Role: %s, User roles: %s", session["role"], session.get("user_roles", []))
-            return jsonify({"success": True, "redirect": url_for("auth.dashboard")})
+            except jwt.PyJWTError as jwt_error:
+                logging.error(f"JWT decoding error: {jwt_error}")
+                session.clear()
+                return jsonify({"success": False, "message": "Invalid token"}), 401
+
         else:
             logging.error("Login failed with status %s: %s", response.status_code, response.text)
             session.clear()
-            return (
-                jsonify({"success": False, "message": "Invalid credentials"}),
-                401,
-            )
+            return jsonify({"success": False, "message": "Invalid credentials"}), 401
+
     except requests.exceptions.RequestException as e:
         logging.error("Request exception during login: %s", str(e))
         session.clear()
@@ -92,11 +113,47 @@ def dashboard():
         logging.error("User not logged in")
         return redirect(url_for("auth.index"))
 
-    logging.info("User logged in")
-    return render_template(
-        "dashboard.html", username=session.get("username"), role=session.get("role")
-    )
+    try:
+        decoded_token = jwt.decode(access_token, options={"verify_signature": False})
+        logging.info("User logged in")
+        return render_template(
+            "dashboard.html", 
+            username=session.get("username"), 
+            role=session.get("role")
+        )
+    except jwt.PyJWTError:
+        logging.error("Invalid token")
+        session.clear()
+        return redirect(url_for("auth.index"))
 
+@auth_bp.route('/debug/session', methods=['GET'])
+def debug_session():
+    try:
+        token = session.get('Authorization')
+        
+        if not token:
+            return jsonify({'error': 'No authorization token found'}), 401
+        
+        decoded_token = jwt.decode(token, options={"verify_signature": False})
+        
+        return jsonify({
+            'username': session.get('username'),
+            'decoded_token': decoded_token,
+            'roles': {
+                'realm_access': decoded_token.get('realm_access', {}),
+                'resource_access': decoded_token.get('resource_access', {}),
+                'user_roles': session.get('user_roles')
+            },
+            'session_data': {
+                'role': session.get('role'),
+                'token_expiry': session.get('token_expiry')
+            }
+        })
+    except Exception as e:
+        return jsonify({
+            'error': str(e),
+            'session_contents': dict(session)
+        }), 500
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():

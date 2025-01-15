@@ -7,10 +7,12 @@ spec:
   selector:
     matchLabels:
       app: webserver
+  action: ALLOW
   rules:
-  - from:
-    - source:
-        principals: ["*"]
+  - to:
+    - operation:
+        methods: ["GET", "POST"]
+        paths: ["/policy/*", "/api/permissions", "/api/permissions/*"]
     when:
     - key: request.auth.claims[resource_access][Istio][roles]
       values: ["admin"]

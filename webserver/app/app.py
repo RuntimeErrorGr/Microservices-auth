@@ -12,7 +12,6 @@ from .policy_route import policy_blueprint
 
 __all__ = ["create_app"]
 
-
 def create_app():
     template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "templates"))
     static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "static"))
@@ -22,14 +21,20 @@ def create_app():
         template_folder=template_dir,
         static_folder=static_dir,
     )
+    
+    # Configure session handling
+    app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=1)
+    app.config['SESSION_COOKIE_SECURE'] = True
+    app.config['SESSION_COOKIE_HTTPONLY'] = True
+    app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config["SESSION_TYPE"] = "filesystem"
+
     configure_logging()
     configure_app(app)
     configure_blueprints(app)
 
-    app.permanent_session_lifetime = timedelta(seconds=1800)
-
     @app.before_request
-    def update_session_timeout():
+    def before_request():
         session.permanent = True
 
     logging.info("Flask Webserver started")
@@ -39,7 +44,6 @@ def create_app():
 
 def configure_app(app: Flask):
     app.config.from_object(Config)
-    app.config["SESSION_TYPE"] = "filesystem"
 
 
 def configure_blueprints(app: Flask):

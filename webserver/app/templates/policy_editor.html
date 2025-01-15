@@ -1,6 +1,8 @@
 {% extends "base_layout.html" %}
 
 {% block content %}
+<div id="policy-editor-root"></div>
+
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-2xl font-bold mb-6">Istio level → change the role - permissions mapping</h1>
     
@@ -86,37 +88,47 @@
 </div>
 
 <script>
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Add debugging logs
     function loadCurrentPermissions() {
+        console.log('Loading permissions...');
         fetch('/api/permissions')
             .then(response => response.json())
             .then(data => {
-                updateCheckboxes('books', data.books_permissions);
-                updateCheckboxes('reviews', data.reviews_permissions);
+                console.log('Received permissions:', data);
+                if (data.books_permissions) updateCheckboxes('books', data.books_permissions);
+                if (data.reviews_permissions) updateCheckboxes('reviews', data.reviews_permissions);
             })
-            .catch(error => console.error('Error loading permissions:', error));
+            .catch(error => {
+                console.error('Error loading permissions:', error);
+                alert('Error loading permissions: ' + error.message);
+            });
     }
 
     function updateCheckboxes(resource, permissions) {
-        if (!permissions) return;
-        
+        console.log(`Updating ${resource} checkboxes:`, permissions);
         permissions.forEach(permission => {
             const checkbox = document.querySelector(
                 `input[data-resource="${resource}"][data-role="${permission.role}"][data-permission="${permission.permission}"]`
             );
             if (checkbox) {
                 checkbox.checked = permission.granted;
+                console.log(`Set ${resource} ${permission.role} ${permission.permission} to ${permission.granted}`);
             }
         });
     }
 
     function savePermissions(resource) {
+        console.log(`Saving ${resource} permissions...`);
         const checkboxes = document.querySelectorAll(`input[data-resource="${resource}"]`);
         const permissions = Array.from(checkboxes).map(checkbox => ({
             role: checkbox.dataset.role,
             permission: checkbox.dataset.permission,
             granted: checkbox.checked
         }));
+
+        console.log(`Sending permissions for ${resource}:`, permissions);
 
         fetch(`/api/permissions/${resource}`, {
             method: 'POST',
@@ -128,21 +140,24 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
+                console.log(`${resource} permissions updated successfully`);
                 alert(`${resource} permissions updated successfully`);
             } else {
+                console.error(`Error updating ${resource} permissions:`, data.error);
                 alert(`Error updating ${resource} permissions: ${data.error}`);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert(`Error saving permissions: ${error}`);
+            alert(`Error saving permissions: ${error.message}`);
         });
     }
 
+    // Add click handlers
     document.getElementById('saveBooks').addEventListener('click', () => savePermissions('books'));
     document.getElementById('saveReviews').addEventListener('click', () => savePermissions('reviews'));
 
-    // Load current permissions when page loads
+    // Load permissions when page loads
     loadCurrentPermissions();
 });
 </script>

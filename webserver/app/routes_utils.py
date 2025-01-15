@@ -2,6 +2,8 @@ import logging
 import requests
 from flask import session, current_app, redirect, url_for
 
+KEYCLOAK_BASE_URL = "http://keycloak-service:88"
+
 
 class NoPermissionError(Exception):
     """Raised when the user does not have permission to access the requested resource."""
@@ -180,64 +182,51 @@ def get_client_id(admin_token):
 
 
 def get_user_roles(admin_token, user_id, client_id):
-    roles_url = f"{current_app.config['KEYCLOAK_USERS_URL']}/{user_id}/role-mappings/clients/{client_id}"
+    logging.info(f"Getting roles - User ID: {user_id}, Client ID: {client_id}")
+    
+    if not user_id or not client_id:
+        logging.error("User ID or Client ID is missing")
+        return []
+
     headers = {
         "Authorization": f"Bearer {admin_token}",
+        "Content-Type": "application/json"
     }
-    try:
-        response = requests.get(
-            roles_url,
-            headers=headers,
-            verify=False,
-            timeout=1,
-        )
-        logging.info("Keycloak response: %s", response.text)
-        return [role.get("name") for role in response.json()]
-    except requests.exceptions.RequestException:
-        logging.error("Roles not found")
-        return None
 
+    try:
+        url = f"{KEYCLOAK_BASE_URL}/admin/realms/Istio/users/{user_id}/role-mappings/clients/{client_id}"
+        logging.info(f"Requesting URL: {url}")
+        
+        response = requests.get(url, headers=headers, verify=False)
+        
+        logging.info(f"Role mapping response status: {response.status_code}")
+        logging.info(f"Role mapping response: {response.text}")
+
+        if response.status_code == 200:
+            roles = response.json()
+            return [role['name'] for role in roles if isinstance(role, dict) and 'name' in role]
+        else:
+            logging.error(f"Failed to get roles: {response.text}")
+            return []
+
+    except Exception as e:
+        logging.error(f"Error retrieving roles: {str(e)}")
+        return []
 
 def update_role():
-    with current_app.app_context():
-        try:
-            if session.get("Authorization"):
-                admin_token = get_admin_token()
-                user_id = session.get("keycloak_user_id")
-                client_id = get_client_id(admin_token)
+    try:
+        admin_token = get_admin_token()
+        username = session.get('username')
+        
+        if not username:
+            logging.error("No username in session")
+            return []
 
-                updated_roles = get_user_roles(admin_token, user_id, client_id)
-                new_role = "-".join(updated_roles)
-                logging.info("Roles: %s -> %s", session.get("role"), new_role)
-                if new_role != session.get("role"):
-                    refresh_token = session.get("refresh_token")
-                    if refresh_token:
-                        data = {
-                            "client_id": ISTIO_CLIENT_ID,
-                            "grant_type": "refresh_token",
-                            "refresh_token": refresh_token,
-                        }
-                        response = requests.post(
-                            current_app.config["KEYCLOAK_REALM_ISTIO_OPENID_TOKEN_URL"],
-                            data=data,
-                            verify=False,
-                            timeout=1,
-                        )
-                        if response.status_code == 200:
-                            token_data = response.json()
-                            session["Authorization"] = token_data["access_token"]
-                            session["refresh_token"] = token_data["refresh_token"]
-                            session["role"] = new_role
-                            logging.info("Access token refreshed, and role updated.")
-                        else:
-                            logging.error("Failed to refresh access token.")
-                            session.clear()
-                            return redirect(url_for("auth.login"))
-                    else:
-                        logging.warning("Refresh token is missing. Clearing session.")
-                        session.clear()
-                        return redirect(url_for("auth.login"))
-        except requests.exceptions.RequestException as e:
-            logging.error("Error during role update or token refresh: %s", str(e))
-            session.clear()
-            return redirect(url_for("auth.login"))
+        user_id = get_user_id(admin_token, username)
+        client_id = get_client_id(admin_token)
+
+        updated_roles = get_user_roles(admin_token, user_id, client_id)
+        return updated_roles
+    except Exception as e:
+        logging.error(f"Error in update_role: {str(e)}")
+        return []
