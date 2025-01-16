@@ -9,58 +9,44 @@ spec:
       app: webserver
   jwtRules:
   - issuer: "https://posd-app-keycloak.com/realms/Istio"
-    jwksUri: "http://10.96.51.185:88/realms/Istio/protocol/openid-connect/certs"
+    jwksUri: "http://10.110.162.21:88/realms/Istio/protocol/openid-connect/certs"
+    forwardOriginalToken: true
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: webserver-auth
+  namespace: default
 spec:
   selector:
     matchLabels:
       app: webserver
   action: ALLOW
   rules:
-    - to:
-        - operation:
-            methods: ["GET", "POST"]
-            paths: [
-              "/",
-              "/static/tailwind/tailwind.css",
-              "/login",
-              "/logout",
-              "/debug/policy-access",
-              "/debug/token-check",
-              "/debug/session",
-              "/books",
-              "/books/*",
-              "/dashboard"
-            ]
+  # Public routes
+  - to:
+    - operation:
+        methods: ["GET", "POST"]
+        paths: [
+          "/",
+          "/static/*",
+          "/login",
+          "/logout",
+          "/dashboard",
+          "/debug/*"
+        ]
 
-    - to:
-        - operation:
-            methods: ["GET", "POST"]
-            paths: [
-              "/policy/editor",
-              "/api/permissions",
-              "/api/permissions/*"
-            ]
-      when:
-        - key: request.auth.claims[resource_access][Istio][roles]
-          values: ["admin"]
-
-    # - to:
-    #     - operation:
-    #         methods: ["GET"]
-    #         paths: [
-    #           "/books",
-    #           "/books/*",
-    #           "/dashboard",
-    #           "/requests",
-    #           "/requests/*",
-    #           "/teapot",
-    #           "settings/*"
-    #         ]
-    #   when:
-    #     - key: request.auth.claims
-    #       notValues: ["null"]
+  # Admin routes
+  - to:
+    - operation:
+        methods: ["GET", "POST"]
+        paths: [
+          "/policy/editor",
+          "/requests",
+          "/api/permissions/*",
+          "/books",
+          "/books/*"
+        ]
+    when:
+    - key: request.auth.claims.resource_access.Istio.roles
+      values: ["admin"]

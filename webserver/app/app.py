@@ -41,6 +41,13 @@ def create_app():
 
     return app
 
+    @app.before_request
+    def debug_request():
+        app.logger.debug(f"Request path: {request.path}")
+        app.logger.debug(f"Request headers: {dict(request.headers)}")
+        if 'Authorization' in request.headers:
+            app.logger.debug(f"Auth header present")
+
 
 def configure_app(app: Flask):
     app.config.from_object(Config)
