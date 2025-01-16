@@ -11,6 +11,9 @@ spec:
   - issuer: "https://posd-app-keycloak.com/realms/Istio"
     jwksUri: "http://10.110.162.21:88/realms/Istio/protocol/openid-connect/certs"
     forwardOriginalToken: true
+    fromHeaders:
+    - name: Authorization
+      prefix: "Bearer "
 ---
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
@@ -27,26 +30,13 @@ spec:
   - to:
     - operation:
         methods: ["GET", "POST"]
-        paths: [
-          "/",
-          "/static/*",
-          "/login",
-          "/logout",
-          "/dashboard",
-          "/debug/*"
-        ]
+        paths: ["/", "/static/*", "/login", "/logout", "/dashboard", "/debug/*"]
 
   # Admin routes
   - to:
     - operation:
         methods: ["GET", "POST"]
-        paths: [
-          "/policy/editor",
-          "/requests",
-          "/api/permissions/*",
-          "/books",
-          "/books/*"
-        ]
+        paths: ["/policy/editor", "/requests", "/api/permissions/*", "/books", "/books/*"]
     when:
     - key: request.auth.claims.resource_access.Istio.roles
       values: ["admin"]
