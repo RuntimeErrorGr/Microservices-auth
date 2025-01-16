@@ -236,7 +236,7 @@ def create_authorization_policy(resource, permissions):
                         'app': app_label
                     }
                 },
-                'action': 'DENY',
+                'action': 'ALLOW',
                 'rules': []
             }
         }

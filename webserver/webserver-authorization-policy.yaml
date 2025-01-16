@@ -19,24 +19,45 @@ apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
   name: webserver-auth
-  namespace: default
 spec:
   selector:
     matchLabels:
       app: webserver
   action: ALLOW
   rules:
-  # Public routes
-  - to:
-    - operation:
-        methods: ["GET", "POST"]
-        paths: ["/", "/static/*", "/login", "/logout", "/dashboard", "/debug/*"]
+    - to:
+        - operation:
+            methods: [ "GET" ]
+            paths:
+              [
+                "/",
+                "/static/tailwind/tailwind.css",
+                "/books",
+                "/books/*",
+                "/dashboard",
+                "/login",
+                "/requests",
+                "/requests/*",
+                "/teapot",
+                "/policy/editor",
+                "/api/permissions"
+            ]
 
-  # Admin routes
-  - to:
-    - operation:
-        methods: ["GET", "POST"]
-        paths: ["/policy/editor", "/requests", "/api/permissions/*", "/books", "/books/*"]
-    when:
-    - key: request.auth.claims.resource_access.Istio.roles
-      values: ["admin"]
+    - to:
+        - operation:
+            methods: [ "POST" ]
+            paths: [ "/login", "/logout", "/api/permissions/*"]
+    - to:
+        - operation:
+            methods: [ "POST" ]
+            paths: [ "/books", "/books/reviews/*"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["admin"]
+    - to:
+        - operation:
+            methods: [ "DELETE" ]
+            paths: [ "/books/*", "/settings/delete_role" ]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["admin"]

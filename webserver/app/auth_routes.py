@@ -20,6 +20,11 @@ auth_bp = Blueprint("auth", __name__)
 def before_request():
     session.permanent = True
     current_app.permanent_session_lifetime = timedelta(hours=1)
+    
+    # Forward the token to Istio
+    if 'Authorization' in session:
+        token = session['Authorization']
+        request.environ['HTTP_AUTHORIZATION'] = f"Bearer {token}"
 
 @auth_bp.route("/", methods=["GET"])
 def index():
@@ -61,12 +66,15 @@ def login():
 
         if response.status_code == 200:
             token_data = response.json()
-            session["Authorization"] = token_data["access_token"]
+            access_token = token_data["access_token"]
+            
+            session["Authorization"] = access_token
+            session["istio_token"] = f"Bearer {access_token}"
             session["refresh_token"] = token_data["refresh_token"]
             session["username"] = username
 
             try:
-                decoded_token = jwt.decode(token_data["access_token"], options={"verify_signature": False})
+                decoded_token = jwt.decode(access_token, options={"verify_signature": False})
                 
                 realm_roles = decoded_token.get('realm_access', {}).get('roles', [])
                 resource_roles = decoded_token.get('resource_access', {}).get('Istio', {}).get('roles', [])
@@ -83,6 +91,8 @@ def login():
                 session["realm_access"] = {
                     "roles": realm_roles
                 }
+
+                request.environ['HTTP_AUTHORIZATION'] = f"Bearer {access_token}"
 
                 logging.info(f"Login successful for {username}")
                 logging.info(f"All roles: {all_roles}")
@@ -154,6 +164,19 @@ def debug_session():
             'error': str(e),
             'session_contents': dict(session)
         }), 500
+
+@auth_bp.route('/debug/token-check')
+def token_check():
+    return jsonify({
+        'headers': {k:v for k,v in request.headers.items()},
+        'environ': {k:v for k,v in request.environ.items() if k.startswith('HTTP_')},
+        'session': {k:v for k,v in session.items() if k != '_permanent'},
+        'auth_debug': {
+            'auth_header_present': 'Authorization' in request.headers,
+            'auth_environ_present': 'HTTP_AUTHORIZATION' in request.environ,
+            'auth_session_present': 'Authorization' in session
+        }
+    })
 
 @auth_bp.route("/logout", methods=["POST"])
 def logout():

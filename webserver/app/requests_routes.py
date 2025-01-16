@@ -25,7 +25,6 @@ def get_pending_books():
             f"{current_app.config['BOOKS_SERVICE_URL']}/books/pending"
         )
 
-        # filter out books that are created by the current user
         books_data = [
             item
             for item in books_data
@@ -53,7 +52,6 @@ def get_pending_reviews():
             f"{current_app.config['BOOKS_SERVICE_URL']}/reviews/pending"
         )
 
-        # filter out reviews that are created by the current user
         reviews_data = [
             item
             for item in reviews_data

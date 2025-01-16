@@ -15,18 +15,41 @@ spec:
 apiVersion: security.istio.io/v1beta1
 kind: AuthorizationPolicy
 metadata:
-  name: books-policy
-  namespace: default
+  name: books-information
 spec:
   selector:
     matchLabels:
       app: books-information
   action: ALLOW
   rules:
-  - to:
-    - operation:
-        methods: ["GET", "POST", "PUT", "DELETE"]
-        paths: ["*"]
-    when:
-    - key: request.auth.claims.resource_access.Istio.roles
-      values: ["admin"]
+    - to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/books/approved",
+                    "/books/*", 
+                    "/books/title/*",
+                    "/books/ratings/*",
+                    "/reviews/by-isbn/*",
+                    "/books/pending",
+                    "/books/approve/*",
+                    "/books/reject/*",
+                    "/reviews/pending",
+                    "/reviews/approve/*",
+                    "/reviews/reject/*"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["admin"]
+    - to:
+        - operation:
+            methods: ["POST"]
+            paths: ["/books/add", "/reviews/add"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["admin"]
+    - to:
+        - operation:
+            methods: ["DELETE"]
+            paths: ["/books/delete/*", "/reviews/delete/*"]
+      when:
+        - key: request.auth.claims[resource_access][Istio][roles]
+          values: ["admin"]
