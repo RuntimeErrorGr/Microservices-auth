@@ -1,4 +1,4 @@
-# POSD-project README
+#  Microservices Authentication System with Keycloak and Istio
 
 ## Prerequisites setup
 
