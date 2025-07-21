@@ -1,5 +1,7 @@
 #  Microservices Authentication System with Keycloak and Istio
 
+ This is a full-stack application with a RBAC model. Keycloak is used for access decisions and Istio sidecars are used to enforce policies at the service level.
+
 ## Prerequisites setup
 
 1. Make sure you have QEMU/KVM virtualization support enabled and working.
